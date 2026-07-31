@@ -64,7 +64,7 @@ var SYSTEM='Você é o Peter, também chamado de Cabeça de Teia, assistente pes
 'Responda de forma completa mas concisa, geralmente de duas a cinco frases. Se o assunto for técnico, explique de verdade, sem enrolar.';
 
 var MODELS={
-  gemini:[['gemini-2.5-flash','Gemini 2.5 Flash'],['gemini-2.0-flash','Gemini 2.0 Flash'],['gemini-1.5-flash','Gemini 1.5 Flash']],
+  gemini:[['gemini-3.6-flash','Gemini 3.6 Flash'],['gemini-3.5-flash-lite','Gemini 3.5 Flash-Lite'],['gemini-3.5-flash','Gemini 3.5 Flash'],['gemini-2.0-flash','Gemini 2.0 Flash (antigo)']],
   claude:[['claude-haiku-4-5','Haiku 4.5'],['claude-sonnet-4-5','Sonnet 4.5'],['claude-3-5-haiku-20241022','Haiku 3.5']]
 };
 
@@ -140,7 +140,17 @@ function ask(text){
   }
 
   fetch(url,opts).then(function(r){
-    return r.json().then(function(data){ return {ok:r.ok,status:r.status,data:data}; });
+    return r.text().then(function(raw){
+      var data;
+      try{ data=JSON.parse(raw); }
+      catch(e){
+        var trecho=raw.slice(0,200);
+        throw new Error('A resposta não veio da API — veio um HTML.\n'+
+          'Isso quase sempre é firewall/proxy da rede bloqueando o endereço.\n'+
+          'Tente por dados móveis (4G) ou outra rede.\n\nInício da resposta:\n'+trecho);
+      }
+      return {ok:r.ok,status:r.status,data:data};
+    });
   }).then(function(res){
     if(!res.ok){
       pending.remove(); convo.pop();
@@ -168,7 +178,7 @@ function ask(text){
     speak(reply);
   }).catch(function(e){
     pending.remove(); convo.pop();
-    add('err','FALHA DE REDE\n'+e.name+': '+e.message);
+    add('err','NÃO CONSEGUI FALAR COM A API\n'+e.message);
     statusEl.textContent='falhou';
   });
 }
