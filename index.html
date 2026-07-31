@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#C41E3A">
+    <meta name="description" content="Peter - Assistente inteligente que entende e responde em voz">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Peter">
+    <link rel="manifest" href="manifest.json">
+    <title>Peter - Cabeça de Teia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0A0A0A;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            color: #FFFFFF;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 35px,
+                    rgba(196, 30, 58, 0.03) 35px,
+                    rgba(196, 30, 58, 0.03) 70px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 3px solid #C41E3A;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #C41E3A 0%, #8B1729 100%);
+            padding: 15px 20px;
+            border-bottom: 4px solid #FFFFFF;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: repeating-linear-gradient(
+                90deg,
+                #FFFFFF,
+                #FFFFFF 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            text-shadow: 3px 3px 0px #000000, -1px -1px 0px #8B1729;
+        }
+
+        .header-title::before {
+            content: '🕷️';
+            font-size: 32px;
+            margin-right: 8px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #FFFFFF;
+            background: rgba(0, 0, 0, 0.3);
+            color: #FFFFFF;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .header-btn:active {
+            transform: scale(0.9);
+        }
+
+        .header-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid rgba(196, 30, 58, 0.3);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: messageSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 14px;
+            word-wrap: break-word;
+            line-height: 1.6;
+            font-size: 13px;
+            border-radius: 2px;
+            position: relative;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .user .message-bubble {
+            background: #C41E3A;
+            color: #FFFFFF;
+            border: 2px solid #FFFFFF;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .assistant .message-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            color: #0A0A0A;
+            border: 2px solid #C41E3A;
+            box-shadow: 4px 4px 0px rgba(196, 30, 58, 0.3);
+        }
+
+        .peter-indicator {
+            display: inline-block;
+            background: #C41E3A;
+            color: #FFFFFF;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-right: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .thinking {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(196, 30, 58, 0.15);
+            border: 2px solid #C41E3A;
+            border-radius: 2px;
+            font-size: 12px;
+            color: #FFB3B3;
+            font-weight: 700;
+            box-shadow: 4px 4px 0px rgba(196, 30, 58, 0.2);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #C41E3A;
+            animation: pulse 1.4s infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 60%, 100% {
+                opacity: 0.3;
+            }
+            30% {
+                opacity: 1;
+            }
+        }
+
+        .drawing-section {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            border-left: 2px solid rgba(196, 30, 58, 0.3);
+        }
+
+        .drawing-section.active {
+            display: flex;
+        }
+
+        .drawing-toolbar {
+            background: linear-gradient(90deg, #1A1A1A 0%, #0A0A0A 100%);
+            border-bottom: 2px solid #C41E3A;
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .drawing-tool-btn {
+            padding: 6px 10px;
+            border: 2px solid #C41E3A;
+            background: rgba(196, 30, 58, 0.1);
+            color: #C41E3A;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .drawing-tool-btn:active {
+            transform: scale(0.9);
+        }
+
+        .drawing-tool-btn.active {
+            background: #C41E3A;
+            color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(196, 30, 58, 0.5);
+        }
+
+        #drawingCanvas {
+            flex: 1;
+            background: #FFFFFF;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .controls {
+            padding: 15px;
+            background: linear-gradient(180deg, #1A1A1A 0%, #0A0A0A 100%);
+            border-top: 3px solid #C41E3A;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: 3px solid;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Righteous', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(196, 30, 58, 0.2);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            left: 0;
+        }
+
+        .btn-primary {
+            background: #C41E3A;
+            border-color: #FFFFFF;
+            color: #FFFFFF;
+            flex: 1;
+            min-height: 45px;
+            font-size: 13px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-primary.recording {
+            animation: recordPulse 0.6s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(196, 30, 58, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes recordPulse {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(196, 30, 58, 0.6), 4px 4px 0px rgba(0, 0, 0, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(196, 30, 58, 0.9), 4px 4px 0px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: #C41E3A;
+            color: #C41E3A;
+            min-height: 45px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(196, 30, 58, 0.1);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 10px;
+            color: #FFB3B3;
+            padding: 6px;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(196, 30, 58, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C41E3A;
+            border-radius: 2px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .header-title {
+                font-size: 20px;
+            }
+
+            .drawing-section {
+                display: none !important;
+            }
+
+            .message-bubble {
+                max-width: 100%;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">Peter</div>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn" id="drawBtn" title="Modo Desenho">✏️</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="chat-container" id="chatContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🕷️</div>
+                        <p>E aí? Tudo certo?</p>
+                        <p style="font-size: 11px; margin-top: 8px;">Aperte no microfone e pergunte algo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawing-section" id="drawingSection">
+                <div class="drawing-toolbar">
+                    <button class="drawing-tool-btn active" data-tool="pen">✏️ Caneta</button>
+                    <button class="drawing-tool-btn" data-tool="eraser">🧹 Borracha</button>
+                    <button class="drawing-tool-btn" data-tool="clear">🗑️ Limpar</button>
+                </div>
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="micBtn">
+                <span id="micText">🎤 Fale</span>
+            </button>
+            <button class="btn btn-secondary" id="clearBtn">🗑️ Chat</button>
+        </div>
+        <div class="status" id="status">Pronto para ouvir</div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const micBtn = document.getElementById('micBtn');
+        const micText = document.getElementById('micText');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusDiv = document.getElementById('status');
+        const drawBtn = document.getElementById('drawBtn');
+        const drawingSection = document.getElementById('drawingSection');
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let recognition;
+        let isRecording = false;
+        let conversationHistory = [];
+        let isDrawingMode = false;
+        let currentTool = 'pen';
+        let isDrawing = false;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const synth = window.speechSynthesis;
+
+        // ===== BASE DE CONHECIMENTO DO PETER =====
+        const peterKnowledge = {
+            greeting: {
+                keywords: ['oi', 'olá', 'opa', 'e aí', 'como vai', 'tudo bem'],
+                responses: [
+                    'E aí! Tudo certo? Só fala comigo!',
+                    'Opa! Tô aqui! O que você precisa?',
+                    'Fala! Diz aí, o que você quer saber?',
+                    'E aí, meu parceiro! Pronto pra conversar!',
+                    'Opa opa opa! Tô de prontidão!'
+                ]
+            },
+            name: {
+                keywords: ['qual seu nome', 'quem você é', 'se chama', 'chamam', 'nome'],
+                responses: [
+                    'Sou Peter, o Cabeça de Teia! Seu assistente pessoal com estilo de Homem-Aranha. Bora conversar?',
+                    'Peter! Peter Parker se quiser ser formal, mas é Peter mesmo! Como posso te ajudar?',
+                    'Cabeça de Teia, amigo! É assim que me chamam por aqui. Pronto pra ajudar!'
+                ]
+            },
+            help: {
+                keywords: ['como você funciona', 'o que você faz', 'ajuda', 'help', 'como usar', 'qual sua função'],
+                responses: [
+                    'Sou teu assistente conversacional! Você fala, eu escuto, entendo e respondo em voz alta! Tenho modo desenho também. É só falar que te ajudo!',
+                    'Simples: você fala comigo, eu entendo, respondo para você e ainda falo em voz alta! Posso desenhar também se quiser. Tamo junto!',
+                    'Funciono assim: você pergunta, eu entendo sua pergunta, dou uma resposta inteligente e falo pra você. Super prático!'
+                ]
+            },
+            about: {
+                keywords: ['homem aranha', 'marvel', 'peter parker', 'teia', 'inspiração'],
+                responses: [
+                    'Cara, sou inspirado no Peter Parker mesmo! Homem-Aranha é meu ídolo. Tô aqui pra te ajudar com a mesma energia do Homem-Aranha!',
+                    'Homem-Aranha, mano! Peter Parker é o cara. Criei este assistente com a vibe do universo Marvel!',
+                    'Marvel, meu! Sou baseado na vida do Peter Parker. Teia, responsabilidade, ajudar o próximo. É isso!'
+                ]
+            },
+            time: {
+                keywords: ['que horas', 'horário', 'hora'],
+                responses: (args) => {
+                    const now = new Date();
+                    const hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    return `Agora são ${hours}:${minutes.toString().padStart(2, '0')}! Não perca tempo!`;
+                }
+            },
+            joke: {
+                keywords: ['piada', 'humor', 'engraçado', 'me fazer rir', 'conta uma piada'],
+                responses: [
+                    'Ó o cara! Por que a aranha é boa em programação? Porque ela trabalha com teia! Hahahaha!',
+                    'Sabe qual é a piada favorita do Homem-Aranha? Nenhuma, ele só quer pegar os vilões na teia!',
+                    'Por que o Homem-Aranha odeia o Windows? Porque precisa de Chrome pra funcionar! Ahahaha!',
+                    'Qual o nome da garota-aranha? Já sabe né... Mary Jane! Tá bom, essa foi fraca!'
+                ]
+            },
+            drawing: {
+                keywords: ['desenho', 'desenhar', 'modo desenho', 'quero desenhar'],
+                responses: [
+                    'Uhul! Modo desenho ativado! Tá vendo o botão com ✏️? Clica lá e bora desenhar!',
+                    'Opa! Quer desenhar? Clica no ✏️ no topo e manda ver! Depois envio pro Pedro aqui (eu!).',
+                    'Drawing mode ligado! Cora desenhar? Clica no lápis lá em cima e se solta!'
+                ]
+            },
+            default: {
+                keywords: [],
+                responses: [
+                    'Hmm, interessante! Me conta mais!',
+                    'Ó, legal isso! Tá bom, entendi!',
+                    'Ah tá, tipo isso aí! Faz sentido!',
+                    'Opa, entendi o que você quer dizer! E aí, tá bom?',
+                    'Sacaneei, sim sim! Quer dizer que...'
+                ]
+            }
+        };
+
+        // ===== SETUP CANVAS =====
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // ===== DRAWING MODE =====
+        drawBtn.addEventListener('click', () => {
+            isDrawingMode = !isDrawingMode;
+            drawBtn.classList.toggle('active');
+            drawingSection.classList.toggle('active');
+        });
+
+        // Drawing tools
+        document.querySelectorAll('.drawing-tool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.drawing-tool-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentTool = e.target.dataset.tool;
+                
+                if (currentTool === 'clear') {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    currentTool = 'pen';
+                    document.querySelector('[data-tool="pen"]').classList.add('active');
+                }
+            });
+        });
+
+        // Canvas Drawing - Mouse
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'pen') {
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#C41E3A';
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            } else if (currentTool === 'eraser') {
+                ctx.clearRect(x - 10, y - 10, 20, 20);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => { isDrawing = false; });
+        canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+        // Canvas Drawing - Touch
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            if (currentTool === 'pen') {
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#C41E3A';
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            } else if (currentTool === 'eraser') {
+                ctx.clearRect(x - 10, y - 10, 20, 20);
+            }
+        });
+
+        canvas.addEventListener('touchend', () => { isDrawing = false; });
+
+        // ===== SPEECH RECOGNITION =====
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.classList.add('recording');
+                micText.textContent = '🎤 Ouvindo...';
+                statusDiv.textContent = 'Fale agora';
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                micText.textContent = '🎤 Fale';
+                statusDiv.textContent = 'Pronto para ouvir';
+            };
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+
+                if (transcript.trim()) {
+                    statusDiv.textContent = '⚡ Entendendo...';
+                    processUserMessage(transcript);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                statusDiv.textContent = `❌ Erro: ${event.error}`;
+            };
+        }
+
+        // ===== MIC BUTTON =====
+        micBtn.addEventListener('mousedown', () => {
+            if (recognition && !isRecording) {
+                recognition.start();
+            }
+        });
+
+        micBtn.addEventListener('mouseup', () => {
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+        });
+
+        micBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (recognition && !isRecording) {
+                recognition.start();
+            }
+        });
+
+        micBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+        });
+
+        // ===== ENTENDER PERGUNTAS E RESPONDER =====
+        function processUserMessage(userInput) {
+            const message = userInput.toLowerCase();
+
+            addMessageToUI('user', userInput);
+            conversationHistory.push({
+                role: 'user',
+                content: userInput
+            });
+
+            // Mostrar "pensando"
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'message assistant';
+            thinkingDiv.innerHTML = `
+                <div class="thinking">
+                    <span>Peter está pensando</span>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            `;
+            chatContainer.appendChild(thinkingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Simular delay de processamento (mais realista)
+            setTimeout(() => {
+                thinkingDiv.remove();
+
+                let response = '';
+
+                // Verificar cada categoria de conhecimento
+                for (const [key, category] of Object.entries(peterKnowledge)) {
+                    for (const keyword of category.keywords) {
+                        if (message.includes(keyword)) {
+                            if (typeof category.responses === 'function') {
+                                response = category.responses();
+                            } else {
+                                response = category.responses[Math.floor(Math.random() * category.responses.length)];
+                            }
+                            break;
+                        }
+                    }
+                    if (response) break;
+                }
+
+                // Se não encontrou match, usar default
+                if (!response) {
+                    response = peterKnowledge.default.responses[Math.floor(Math.random() * peterKnowledge.default.responses.length)];
+                }
+
+                // Adicionar resposta
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: response
+                });
+
+                addMessageToUI('assistant', response);
+                saveHistory();
+                
+                // FALAR A RESPOSTA
+                speak(response);
+                statusDiv.textContent = '🗣️ Falando...';
+            }, 800);
+        }
+
+        // ===== TEXT TO SPEECH =====
+        function speak(text) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 0.95;
+            utterance.pitch = 1.2; // Pitch um pouco mais alto pra parecer adolescente
+            utterance.volume = 1;
+
+            utterance.onend = () => {
+                statusDiv.textContent = 'Pronto para ouvir';
+            };
+
+            synth.speak(utterance);
+        }
+
+        // ===== HISTÓRICO =====
+        function loadHistory() {
+            const saved = localStorage.getItem('peterHistory');
+            if (saved) {
+                conversationHistory = JSON.parse(saved);
+                renderMessages();
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem('peterHistory', JSON.stringify(conversationHistory));
+        }
+
+        function renderMessages() {
+            if (conversationHistory.length === 0) {
+                chatContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🕷️</div>
+                        <p>E aí? Tudo certo?</p>
+                        <p style="font-size: 11px; margin-top: 8px;">Aperte no microfone e pergunte algo</p>
+                    </div>
+                `;
+                return;
+            }
+
+            chatContainer.innerHTML = '';
+            conversationHistory.forEach(msg => {
+                addMessageToUI(msg.role, msg.content, false);
+            });
+        }
+
+        function addMessageToUI(role, content, isNew = true) {
+            if (chatContainer.querySelector('.empty-state')) {
+                chatContainer.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            if (role === 'assistant') {
+                bubble.innerHTML = `<span class="peter-indicator">PETER</span>${content}`;
+            } else {
+                bubble.textContent = content;
+            }
+
+            messageDiv.appendChild(bubble);
+            chatContainer.appendChild(messageDiv);
+
+            if (isNew) {
+                setTimeout(() => {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 100);
+            }
+        }
+
+        // ===== LIMPAR CHAT =====
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Vai limpar tudo?')) {
+                conversationHistory = [];
+                localStorage.removeItem('peterHistory');
+                renderMessages();
+                statusDiv.textContent = '✨ Chat limpo!';
+                setTimeout(() => {
+                    statusDiv.textContent = 'Pronto para ouvir';
+                }, 2000);
+            }
+        });
+
+        // ===== INICIALIZAR =====
+        loadHistory();
+    </script>
+</body>
+</html>
