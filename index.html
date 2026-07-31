@@ -11,13 +11,15 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#111;color:#eee;h
 header{padding:14px;background:#1a1a1a;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
 header h1{font-size:18px;font-weight:600}
 .cfg{padding:10px 14px;background:#161616;border-bottom:1px solid #333;display:flex;gap:8px;flex-wrap:wrap}
-.cfg input,.cfg select{flex:1;min-width:140px;padding:8px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:6px;font-size:13px}
+.cfg input,.cfg select{padding:8px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:6px;font-size:13px}
+.cfg input{flex:1 1 100%}
+.cfg select{flex:1 1 120px}
 #chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .msg{max-width:88%;padding:10px 13px;border-radius:12px;font-size:14px;line-height:1.55;white-space:pre-wrap}
 .user{align-self:flex-end;background:#c41e3a}
 .bot{align-self:flex-start;background:#242424;border:1px solid #383838}
 .err{align-self:flex-start;background:#3a1414;border:1px solid #a33;font-size:12px;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-width:100%}
-.hint{color:#777;font-size:13px;text-align:center;margin:auto;padding:20px;line-height:1.6}
+.hint{color:#777;font-size:13px;text-align:center;margin:auto;padding:20px;line-height:1.7}
 footer{padding:12px;background:#1a1a1a;border-top:1px solid #333;display:flex;gap:8px}
 #txt{flex:1;padding:11px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:8px;font-size:14px}
 button{padding:11px 14px;border:0;border-radius:8px;background:#c41e3a;color:#fff;font-size:15px;cursor:pointer}
@@ -29,19 +31,18 @@ button:active{opacity:.7}
 </head>
 <body>
 <div class="app">
-  <header><span>🕷️</span><h1>Peter</h1></header>
+  <header><span>&#128375;</span><h1>Peter</h1></header>
 
   <div class="cfg">
-    <input type="password" id="key" placeholder="Cole sua chave sk-ant-...">
-    <select id="model">
-      <option value="claude-sonnet-4-5">Sonnet 4.5</option>
-      <option value="claude-haiku-4-5">Haiku 4.5 (mais barato)</option>
-      <option value="claude-3-5-sonnet-20241022">Sonnet 3.5</option>
-      <option value="claude-3-5-haiku-20241022">Haiku 3.5</option>
+    <select id="provider">
+      <option value="gemini">Google Gemini (gratuito)</option>
+      <option value="claude">Claude / Anthropic (pago)</option>
     </select>
+    <select id="model"></select>
+    <input type="password" id="key" placeholder="Cole sua chave aqui">
   </div>
 
-  <div id="chat"><div class="hint">Cole sua chave da API acima.<br>Depois digite ou aperte o microfone e fale.</div></div>
+  <div id="chat"><div class="hint">Escolha o provedor, cole a chave e mande ver.<br>Chave gratuita do Gemini: aistudio.google.com/apikey</div></div>
   <div id="status">pronto</div>
 
   <footer>
@@ -52,42 +53,67 @@ button:active{opacity:.7}
 </div>
 
 <script>
-const chat=document.getElementById('chat'),txt=document.getElementById('txt'),
-      keyIn=document.getElementById('key'),modelIn=document.getElementById('model'),
-      status=document.getElementById('status'),micBtn=document.getElementById('mic');
+var chat=document.getElementById('chat'),txt=document.getElementById('txt'),
+    keyIn=document.getElementById('key'),modelIn=document.getElementById('model'),
+    provIn=document.getElementById('provider'),
+    statusEl=document.getElementById('status'),micBtn=document.getElementById('mic');
 
-const SYSTEM = `Você é o Peter, também chamado de Cabeça de Teia, assistente pessoal do usuário.
-Personalidade: inspirado no Peter Parker da Marvel — esperto, informal, bem-humorado, direto, fala português brasileiro coloquial.
-Suas respostas serão LIDAS EM VOZ ALTA, então: seja natural, sem markdown, sem listas com asterisco, sem emoji, frases fluidas.
-Responda de forma completa mas concisa (2 a 5 frases normalmente). Se o assunto for técnico, explica de verdade, sem enrolar.`;
+var SYSTEM='Você é o Peter, também chamado de Cabeça de Teia, assistente pessoal do usuário. '+
+'Personalidade: inspirado no Peter Parker da Marvel — esperto, informal, bem-humorado, direto, fala português brasileiro coloquial. '+
+'Suas respostas serão LIDAS EM VOZ ALTA, então: nada de markdown, nada de listas com asterisco, nada de emoji, use frases fluidas. '+
+'Responda de forma completa mas concisa, geralmente de duas a cinco frases. Se o assunto for técnico, explique de verdade, sem enrolar.';
 
-let history=[];
+var MODELS={
+  gemini:[['gemini-2.5-flash','Gemini 2.5 Flash'],['gemini-2.0-flash','Gemini 2.0 Flash'],['gemini-1.5-flash','Gemini 1.5 Flash']],
+  claude:[['claude-haiku-4-5','Haiku 4.5'],['claude-sonnet-4-5','Sonnet 4.5'],['claude-3-5-haiku-20241022','Haiku 3.5']]
+};
 
-keyIn.value = localStorage.getItem('anthKey')||'';
-modelIn.value = localStorage.getItem('anthModel')||'claude-sonnet-4-5';
-keyIn.onchange = ()=>localStorage.setItem('anthKey',keyIn.value.trim());
-modelIn.onchange = ()=>localStorage.setItem('anthModel',modelIn.value);
+var history=[];
+
+function fillModels(){
+  var list=MODELS[provIn.value];
+  modelIn.innerHTML='';
+  for(var i=0;i<list.length;i++){
+    var o=document.createElement('option');
+    o.value=list[i][0]; o.textContent=list[i][1];
+    modelIn.appendChild(o);
+  }
+  var saved=localStorage.getItem('model_'+provIn.value);
+  if(saved) modelIn.value=saved;
+  keyIn.value=localStorage.getItem('key_'+provIn.value)||'';
+  keyIn.placeholder = provIn.value==='gemini' ? 'Chave do Google AI Studio' : 'Chave sk-ant-...';
+}
+
+provIn.value=localStorage.getItem('provider')||'gemini';
+fillModels();
+
+provIn.onchange=function(){ localStorage.setItem('provider',provIn.value); fillModels(); history=[]; };
+modelIn.onchange=function(){ localStorage.setItem('model_'+provIn.value,modelIn.value); };
+keyIn.onchange=function(){ localStorage.setItem('key_'+provIn.value,keyIn.value.trim()); };
 
 function add(role,text){
-  if(chat.querySelector('.hint')) chat.innerHTML='';
-  const d=document.createElement('div');
+  var h=chat.querySelector('.hint'); if(h) chat.innerHTML='';
+  var d=document.createElement('div');
   d.className='msg '+(role==='user'?'user':role==='err'?'err':'bot');
   d.textContent=text;
   chat.appendChild(d); chat.scrollTop=chat.scrollHeight;
   return d;
 }
 
-async function ask(text){
-  const key=keyIn.value.trim();
-  if(!key){ add('err','Falta a chave da API. Cola lá em cima.'); return; }
+function ask(text){
+  var key=keyIn.value.trim();
+  if(!key){ add('err','Falta a chave. Cola lá em cima.'); return; }
 
   add('user',text);
   history.push({role:'user',content:text});
-  const pending=add('bot','...');
-  status.textContent='pensando...';
+  var pending=add('bot','...');
+  statusEl.textContent='pensando...';
 
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
+  var url,opts;
+
+  if(provIn.value==='claude'){
+    url='https://api.anthropic.com/v1/messages';
+    opts={
       method:'POST',
       headers:{
         'content-type':'application/json',
@@ -95,60 +121,82 @@ async function ask(text){
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
-      body:JSON.stringify({
-        model:modelIn.value,
-        max_tokens:800,
-        system:SYSTEM,
-        messages:history
-      })
+      body:JSON.stringify({model:modelIn.value,max_tokens:800,system:SYSTEM,messages:history})
+    };
+  }else{
+    var contents=history.map(function(m){
+      return {role:(m.role==='assistant'?'model':'user'),parts:[{text:m.content}]};
     });
+    url='https://generativelanguage.googleapis.com/v1beta/models/'+modelIn.value+':generateContent?key='+encodeURIComponent(key);
+    opts={
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({
+        system_instruction:{parts:[{text:SYSTEM}]},
+        contents:contents,
+        generationConfig:{maxOutputTokens:800}
+      })
+    };
+  }
 
-    const data=await r.json();
-
-    if(!r.ok){
-      pending.remove();
-      history.pop();
-      add('err','ERRO '+r.status+'\n'+JSON.stringify(data,null,2));
-      status.textContent='erro '+r.status;
+  fetch(url,opts).then(function(r){
+    return r.json().then(function(data){ return {ok:r.ok,status:r.status,data:data}; });
+  }).then(function(res){
+    if(!res.ok){
+      pending.remove(); history.pop();
+      add('err','ERRO '+res.status+'\n'+JSON.stringify(res.data,null,2));
+      statusEl.textContent='erro '+res.status;
       return;
     }
-
-    const reply=data.content.map(function(b){return b.text||'';}).join('').trim();
+    var reply='';
+    if(provIn.value==='claude'){
+      reply=res.data.content.map(function(b){return b.text||'';}).join('').trim();
+    }else{
+      var c=res.data.candidates&&res.data.candidates[0];
+      if(c&&c.content&&c.content.parts){
+        reply=c.content.parts.map(function(p){return p.text||'';}).join('').trim();
+      }
+    }
+    if(!reply){
+      pending.remove(); history.pop();
+      add('err','Resposta vazia:\n'+JSON.stringify(res.data,null,2));
+      statusEl.textContent='vazio';
+      return;
+    }
     pending.textContent=reply;
     history.push({role:'assistant',content:reply});
     speak(reply);
-
-  }catch(e){
+  }).catch(function(e){
     pending.remove(); history.pop();
     add('err','FALHA DE REDE\n'+e.name+': '+e.message);
-    status.textContent='falhou';
-  }
+    statusEl.textContent='falhou';
+  });
 }
 
 function speak(t){
   try{
     speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(t);
+    var u=new SpeechSynthesisUtterance(t);
     u.lang='pt-BR'; u.rate=1.02; u.pitch=1.05;
-    u.onstart=function(){status.textContent='falando...';};
-    u.onend=function(){status.textContent='pronto';};
+    u.onstart=function(){statusEl.textContent='falando...';};
+    u.onend=function(){statusEl.textContent='pronto';};
     speechSynthesis.speak(u);
-  }catch(e){ status.textContent='pronto'; }
+  }catch(e){ statusEl.textContent='pronto'; }
 }
 
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null,on=false;
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var rec=null,on=false;
 if(SR){
   rec=new SR(); rec.lang='pt-BR'; rec.continuous=false; rec.interimResults=false;
-  rec.onstart=function(){on=true;micBtn.classList.add('on');status.textContent='ouvindo...';};
+  rec.onstart=function(){on=true;micBtn.classList.add('on');statusEl.textContent='ouvindo...';};
   rec.onend=function(){on=false;micBtn.classList.remove('on');};
   rec.onerror=function(e){
     on=false;micBtn.classList.remove('on');
-    status.textContent='mic: '+e.error;
+    statusEl.textContent='mic: '+e.error;
     if(e.error==='not-allowed') add('err','Microfone bloqueado. Libera a permissão do site no navegador.');
   };
   rec.onresult=function(e){
-    const t=e.results[0][0].transcript.trim();
+    var t=e.results[0][0].transcript.trim();
     if(t) ask(t);
   };
 }else{
@@ -162,7 +210,7 @@ micBtn.onclick=function(){
 };
 
 function sendText(){
-  const t=txt.value.trim();
+  var t=txt.value.trim();
   if(!t) return;
   txt.value='';
   ask(t);
