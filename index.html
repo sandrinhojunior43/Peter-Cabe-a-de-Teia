@@ -68,7 +68,7 @@ var MODELS={
   claude:[['claude-haiku-4-5','Haiku 4.5'],['claude-sonnet-4-5','Sonnet 4.5'],['claude-3-5-haiku-20241022','Haiku 3.5']]
 };
 
-var history=[];
+var convo=[];
 
 function fillModels(){
   var list=MODELS[provIn.value];
@@ -87,7 +87,7 @@ function fillModels(){
 provIn.value=localStorage.getItem('provider')||'gemini';
 fillModels();
 
-provIn.onchange=function(){ localStorage.setItem('provider',provIn.value); fillModels(); history=[]; };
+provIn.onchange=function(){ localStorage.setItem('provider',provIn.value); fillModels(); convo=[]; };
 modelIn.onchange=function(){ localStorage.setItem('model_'+provIn.value,modelIn.value); };
 keyIn.onchange=function(){ localStorage.setItem('key_'+provIn.value,keyIn.value.trim()); };
 
@@ -105,7 +105,7 @@ function ask(text){
   if(!key){ add('err','Falta a chave. Cola lá em cima.'); return; }
 
   add('user',text);
-  history.push({role:'user',content:text});
+  convo.push({role:'user',content:text});
   var pending=add('bot','...');
   statusEl.textContent='pensando...';
 
@@ -121,10 +121,10 @@ function ask(text){
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
-      body:JSON.stringify({model:modelIn.value,max_tokens:800,system:SYSTEM,messages:history})
+      body:JSON.stringify({model:modelIn.value,max_tokens:800,system:SYSTEM,messages:convo})
     };
   }else{
-    var contents=history.map(function(m){
+    var contents=convo.map(function(m){
       return {role:(m.role==='assistant'?'model':'user'),parts:[{text:m.content}]};
     });
     url='https://generativelanguage.googleapis.com/v1beta/models/'+modelIn.value+':generateContent?key='+encodeURIComponent(key);
@@ -143,7 +143,7 @@ function ask(text){
     return r.json().then(function(data){ return {ok:r.ok,status:r.status,data:data}; });
   }).then(function(res){
     if(!res.ok){
-      pending.remove(); history.pop();
+      pending.remove(); convo.pop();
       add('err','ERRO '+res.status+'\n'+JSON.stringify(res.data,null,2));
       statusEl.textContent='erro '+res.status;
       return;
@@ -158,16 +158,16 @@ function ask(text){
       }
     }
     if(!reply){
-      pending.remove(); history.pop();
+      pending.remove(); convo.pop();
       add('err','Resposta vazia:\n'+JSON.stringify(res.data,null,2));
       statusEl.textContent='vazio';
       return;
     }
     pending.textContent=reply;
-    history.push({role:'assistant',content:reply});
+    convo.push({role:'assistant',content:reply});
     speak(reply);
   }).catch(function(e){
-    pending.remove(); history.pop();
+    pending.remove(); convo.pop();
     add('err','FALHA DE REDE\n'+e.name+': '+e.message);
     statusEl.textContent='falhou';
   });
