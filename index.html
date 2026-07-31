@@ -2,231 +2,681 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#FBFBFD">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Peter">
 <title>Peter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,sans-serif;background:#111;color:#eee;height:100vh;display:flex;justify-content:center}
-.app{width:100%;max-width:640px;display:flex;flex-direction:column;height:100vh;border-left:1px solid #333;border-right:1px solid #333}
-header{padding:14px;background:#1a1a1a;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
-header h1{font-size:18px;font-weight:600}
-.cfg{padding:10px 14px;background:#161616;border-bottom:1px solid #333;display:flex;gap:8px;flex-wrap:wrap}
-.cfg input,.cfg select{padding:8px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:6px;font-size:13px}
-.cfg input{flex:1 1 100%}
-.cfg select{flex:1 1 120px}
-#chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.msg{max-width:88%;padding:10px 13px;border-radius:12px;font-size:14px;line-height:1.55;white-space:pre-wrap}
-.user{align-self:flex-end;background:#c41e3a}
-.bot{align-self:flex-start;background:#242424;border:1px solid #383838}
-.err{align-self:flex-start;background:#3a1414;border:1px solid #a33;font-size:12px;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-width:100%}
-.hint{color:#777;font-size:13px;text-align:center;margin:auto;padding:20px;line-height:1.7}
-footer{padding:12px;background:#1a1a1a;border-top:1px solid #333;display:flex;gap:8px}
-#txt{flex:1;padding:11px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:8px;font-size:14px}
-button{padding:11px 14px;border:0;border-radius:8px;background:#c41e3a;color:#fff;font-size:15px;cursor:pointer}
-button:active{opacity:.7}
-#mic.on{background:#fff;color:#c41e3a;animation:p .8s infinite}
-@keyframes p{50%{opacity:.5}}
-#status{font-size:11px;color:#888;padding:6px 14px;background:#141414;text-align:center}
+:root{
+  --paper:#FBFBFD;
+  --ink:#101114;
+  --mute:#8A8F98;
+  --faint:#C7CAD1;
+  --hair:#E6E7EB;
+  --accent:#D62839;
+  --sheet:#FFFFFF;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --pad:22px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+}
+.serif{font-family:"Newsreader",ui-serif,Georgia,serif}
+
+.app{
+  width:100%;max-width:520px;height:100%;
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+/* ---------- barra superior ---------- */
+.bar{
+  display:flex;align-items:center;gap:8px;
+  padding:16px var(--pad) 0;
+}
+.live{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  flex:none;opacity:.25;transition:opacity .5s var(--ease);
+}
+.live.on{opacity:1;animation:breathe 2.6s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.35}}
+.bar .label{
+  font-size:12px;letter-spacing:.02em;color:var(--mute);
+  flex:1;font-variant-numeric:tabular-nums;
+}
+.icon-btn{
+  width:34px;height:34px;border:0;background:transparent;color:var(--mute);
+  display:grid;place-items:center;border-radius:50%;cursor:pointer;
+  transition:background .25s var(--ease),color .25s var(--ease);
+}
+.icon-btn:hover{background:rgba(0,0,0,.04);color:var(--ink)}
+.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- notícias ---------- */
+.news{
+  padding:2px var(--pad) 0;cursor:pointer;
+}
+.news-line{
+  min-height:64px;display:flex;align-items:flex-start;
+}
+.news-line p{
+  font-size:20px;line-height:1.32;font-weight:400;letter-spacing:-.01em;
+  transition:opacity .5s var(--ease),transform .5s var(--ease);
+}
+.news-line p.out{opacity:0;transform:translateY(-6px)}
+.news-line p.placeholder{color:var(--faint)}
+.tick{height:1px;background:var(--hair);margin-top:14px;overflow:hidden}
+.tick i{display:block;height:100%;background:var(--faint);width:0}
+.tick i.run{animation:sweep 7s linear forwards}
+@keyframes sweep{from{width:0}to{width:100%}}
+
+.rule{height:1px;background:var(--hair);margin:18px var(--pad) 0}
+
+/* ---------- transcrição ---------- */
+.stage{
+  flex:1;min-height:0;overflow-y:auto;padding:22px var(--pad) 8px;
+  scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 20px,#000 calc(100% - 28px),transparent 100%);
+          mask-image:linear-gradient(180deg,transparent 0,#000 20px,#000 calc(100% - 28px),transparent 100%);
+}
+.stage::-webkit-scrollbar{display:none}
+.turn{margin-bottom:30px}
+.asked{
+  font-size:12px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:10px;
+}
+.said{
+  font-size:24px;line-height:1.42;font-weight:300;letter-spacing:-.015em;
+}
+.said w{
+  opacity:.22;
+  transition:opacity .18s linear;
+}
+.said w.lit{opacity:1}
+.said.done w{opacity:1}
+.note{
+  font-size:12.5px;color:var(--mute);border-left:2px solid var(--hair);
+  padding:2px 0 2px 12px;white-space:pre-wrap;
+}
+.note b{display:block;color:var(--ink);font-weight:500;margin-bottom:3px}
+.note pre{
+  font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--faint);margin-top:8px;white-space:pre-wrap;word-break:break-word;
+  max-height:150px;overflow:auto;
+}
+.blank{
+  height:100%;display:flex;flex-direction:column;justify-content:center;
+  color:var(--faint);
+}
+.blank p{font-size:22px;font-weight:300;line-height:1.45;letter-spacing:-.01em}
+
+.dots{display:flex;gap:5px;padding:4px 0}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--faint);animation:blip 1.3s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes blip{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+/* ---------- base ---------- */
+.base{padding:6px var(--pad) 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.mic{
+  position:relative;width:72px;height:72px;border-radius:50%;border:0;
+  background:var(--ink);color:#fff;cursor:pointer;
+  display:grid;place-items:center;
+  box-shadow:0 6px 22px rgba(16,17,20,.18);
+  transition:transform .4s var(--ease),background .4s var(--ease),box-shadow .4s var(--ease);
+}
+.mic:active{transform:scale(.94)}
+.mic:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.mic.on{background:var(--accent);box-shadow:0 6px 26px rgba(214,40,57,.34)}
+.mic::after{
+  content:"";position:absolute;inset:-6px;border-radius:50%;
+  border:1.5px solid var(--accent);opacity:0;
+}
+.mic.on::after{animation:ring 1.6s var(--ease) infinite}
+@keyframes ring{
+  0%{transform:scale(.9);opacity:.6}
+  100%{transform:scale(1.45);opacity:0}
+}
+.hint{font-size:12.5px;color:var(--faint);height:16px;transition:color .3s var(--ease)}
+.hint.warm{color:var(--mute)}
+
+.write{display:flex;gap:8px;width:100%;max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .4s var(--ease),opacity .3s var(--ease)}
+.write.open{max-height:60px;opacity:1}
+.write input{
+  flex:1;padding:12px 15px;border:1px solid var(--hair);border-radius:22px;
+  background:#fff;font-size:16px;font-family:inherit;color:var(--ink);
+  transition:border-color .25s var(--ease);
+}
+.write input:focus{outline:0;border-color:var(--ink)}
+.write button{
+  border:0;background:var(--ink);color:#fff;width:44px;border-radius:22px;
+  cursor:pointer;font-size:15px;
+}
+
+/* ---------- painel de ajustes ---------- */
+.veil{
+  position:fixed;inset:0;background:rgba(16,17,20,.28);
+  opacity:0;pointer-events:none;transition:opacity .45s var(--ease);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:10;
+}
+.veil.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:11;
+  margin:0 auto;max-width:520px;
+  background:var(--sheet);border-radius:26px 26px 0 0;
+  padding:10px var(--pad) calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(101%);transition:transform .5s var(--ease);
+  box-shadow:0 -8px 40px rgba(16,17,20,.14);
+  max-height:88vh;overflow-y:auto;
+}
+.sheet.open{transform:translateY(0)}
+.grip{width:36px;height:4px;border-radius:2px;background:var(--hair);margin:0 auto 18px}
+.sheet h2{font-size:19px;font-weight:600;letter-spacing:-.02em;margin-bottom:2px}
+.sheet .sub{font-size:13px;color:var(--mute);margin-bottom:22px}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.field select,.field input{
+  width:100%;padding:12px 14px;border:1px solid var(--hair);border-radius:12px;
+  background:#fff;font-size:15px;font-family:inherit;color:var(--ink);
+  appearance:none;-webkit-appearance:none;
+}
+.field select:focus,.field input:focus{outline:0;border-color:var(--ink)}
+.seg{display:flex;background:#F2F2F5;border-radius:12px;padding:3px;gap:3px}
+.seg button{
+  flex:1;padding:9px;border:0;border-radius:9px;background:transparent;
+  font-family:inherit;font-size:14px;color:var(--mute);cursor:pointer;
+  transition:background .3s var(--ease),color .3s var(--ease),box-shadow .3s var(--ease);
+}
+.seg button.sel{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-top:1px solid var(--hair)}
+.row .t{font-size:15px}
+.row .d{font-size:12.5px;color:var(--mute);margin-top:2px}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--hair);border:0;position:relative;cursor:pointer;flex:none;transition:background .3s var(--ease)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .3s var(--ease)}
+.sw.on{background:var(--accent)}
+.sw.on::after{transform:translateX(20px)}
+.tip{font-size:12.5px;color:var(--mute);line-height:1.55;border-top:1px solid var(--hair);padding-top:16px;margin-top:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::after{animation:none!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <header><span>&#128375;</span><h1>Peter</h1></header>
 
-  <div class="cfg">
-    <select id="provider">
-      <option value="gemini">Google Gemini (gratuito)</option>
-      <option value="claude">Claude / Anthropic (pago)</option>
-    </select>
-    <select id="model"></select>
-    <input type="password" id="key" placeholder="Cole sua chave aqui">
+<div class="app">
+  <div class="bar">
+    <span class="live" id="live"></span>
+    <span class="label" id="clock">hoje</span>
+    <button class="icon-btn" id="gear" aria-label="Ajustes">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
   </div>
 
-  <div id="chat"><div class="hint">Escolha o provedor, cole a chave e mande ver.<br>Chave gratuita do Gemini: aistudio.google.com/apikey</div></div>
-  <div id="status">pronto</div>
+  <div class="news" id="news">
+    <div class="news-line"><p class="serif placeholder" id="headline">Sem notícias ainda.</p></div>
+    <div class="tick"><i id="tick"></i></div>
+  </div>
 
-  <footer>
-    <input id="txt" placeholder="Escreve aqui...">
-    <button id="send">&#10148;</button>
-    <button id="mic">&#127908;</button>
-  </footer>
+  <div class="rule"></div>
+
+  <div class="stage" id="stage">
+    <div class="blank" id="blank">
+      <p class="serif">Toque no microfone<br>e pergunte qualquer coisa.</p>
+    </div>
+  </div>
+
+  <div class="base">
+    <div class="write" id="write">
+      <input id="txt" placeholder="Escrever" autocomplete="off">
+      <button id="send" aria-label="Enviar">↑</button>
+    </div>
+    <button class="mic" id="mic" aria-label="Falar com o Peter">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+        <rect x="9" y="2" width="6" height="12" rx="3"/>
+        <path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>
+      </svg>
+    </button>
+    <div class="hint" id="hint">toque para falar · <u id="kb" style="cursor:pointer">escrever</u></div>
+  </div>
+</div>
+
+<div class="veil" id="veil"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Ajustes">
+  <div class="grip"></div>
+  <h2>Ajustes</h2>
+  <p class="sub">Onde o Peter busca as respostas.</p>
+
+  <div class="field">
+    <label>Serviço</label>
+    <div class="seg" id="seg">
+      <button data-p="gemini">Google Gemini</button>
+      <button data-p="claude">Anthropic</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Modelo</label>
+    <select id="model"></select>
+  </div>
+
+  <div class="field">
+    <label>Chave</label>
+    <input type="password" id="key" placeholder="Cole a chave" autocomplete="off">
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="t">Pesquisar na web</div>
+      <div class="d">Deixa o Peter checar fatos recentes antes de responder.</div>
+    </div>
+    <button class="sw" id="swWeb" aria-label="Pesquisar na web"></button>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="t">Notícias ao abrir</div>
+      <div class="d">Busca as manchetes do dia. Consome cota.</div>
+    </div>
+    <button class="sw" id="swNews" aria-label="Notícias ao abrir"></button>
+  </div>
+
+  <p class="tip">Para virar ícone no celular: abra pelo Chrome ou Safari, toque no menu do navegador e escolha adicionar à tela de início. Ele abre em tela cheia, sem barra de endereço.</p>
 </div>
 
 <script>
-var chat=document.getElementById('chat'),txt=document.getElementById('txt'),
-    keyIn=document.getElementById('key'),modelIn=document.getElementById('model'),
-    provIn=document.getElementById('provider'),
-    statusEl=document.getElementById('status'),micBtn=document.getElementById('mic');
+var $=function(id){return document.getElementById(id);};
+var stage=$('stage'),blank=$('blank'),micBtn=$('mic'),hint=$('hint'),live=$('live'),
+    clock=$('clock'),headline=$('headline'),tick=$('tick'),txt=$('txt'),write=$('write');
 
-var SYSTEM='Você é o Peter, também chamado de Cabeça de Teia, assistente pessoal do usuário. '+
-'Personalidade: inspirado no Peter Parker da Marvel — esperto, informal, bem-humorado, direto, fala português brasileiro coloquial. '+
-'Suas respostas serão LIDAS EM VOZ ALTA, então: nada de markdown, nada de listas com asterisco, nada de emoji, use frases fluidas. '+
-'Responda de forma completa mas concisa, geralmente de duas a cinco frases. Se o assunto for técnico, explique de verdade, sem enrolar.';
-
+/* ---------------- preferências ---------------- */
+var P={
+  prov:localStorage.getItem('prov')||'gemini',
+  web:localStorage.getItem('web')!=='0',
+  news:localStorage.getItem('news_on')!=='0'
+};
 var MODELS={
-  gemini:[['gemini-3.6-flash','Gemini 3.6 Flash'],['gemini-3.5-flash-lite','Gemini 3.5 Flash-Lite'],['gemini-3.5-flash','Gemini 3.5 Flash'],['gemini-2.0-flash','Gemini 2.0 Flash (antigo)']],
+  gemini:[['gemini-3.6-flash','Gemini 3.6 Flash'],['gemini-3.5-flash-lite','Gemini 3.5 Flash-Lite'],['gemini-3.5-flash','Gemini 3.5 Flash'],['gemini-2.0-flash','Gemini 2.0 Flash']],
   claude:[['claude-haiku-4-5','Haiku 4.5'],['claude-sonnet-4-5','Sonnet 4.5'],['claude-3-5-haiku-20241022','Haiku 3.5']]
 };
-
-var convo=[];
-
-function fillModels(){
-  var list=MODELS[provIn.value];
-  modelIn.innerHTML='';
-  for(var i=0;i<list.length;i++){
-    var o=document.createElement('option');
-    o.value=list[i][0]; o.textContent=list[i][1];
-    modelIn.appendChild(o);
-  }
-  var saved=localStorage.getItem('model_'+provIn.value);
-  if(saved) modelIn.value=saved;
-  keyIn.value=localStorage.getItem('key_'+provIn.value)||'';
-  keyIn.placeholder = provIn.value==='gemini' ? 'Chave do Google AI Studio' : 'Chave sk-ant-...';
+function keyOf(){return (localStorage.getItem('key_'+P.prov)||'').trim();}
+function modelOf(){
+  var s=localStorage.getItem('model_'+P.prov);
+  var list=MODELS[P.prov].map(function(m){return m[0];});
+  return (s&&list.indexOf(s)>=0)?s:list[0];
 }
 
-provIn.value=localStorage.getItem('provider')||'gemini';
-fillModels();
+/* ---------------- relógio ---------------- */
+function tickClock(){
+  var d=new Date();
+  clock.textContent='hoje · '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+}
+tickClock(); setInterval(tickClock,30000);
 
-provIn.onchange=function(){ localStorage.setItem('provider',provIn.value); fillModels(); convo=[]; };
-modelIn.onchange=function(){ localStorage.setItem('model_'+provIn.value,modelIn.value); };
-keyIn.onchange=function(){ localStorage.setItem('key_'+provIn.value,keyIn.value.trim()); };
-
-function add(role,text){
-  var h=chat.querySelector('.hint'); if(h) chat.innerHTML='';
-  var d=document.createElement('div');
-  d.className='msg '+(role==='user'?'user':role==='err'?'err':'bot');
-  d.textContent=text;
-  chat.appendChild(d); chat.scrollTop=chat.scrollHeight;
-  return d;
+/* ---------------- instrução do Peter ---------------- */
+function systemText(){
+  var d=new Date();
+  var dias=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  var meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var hoje=dias[d.getDay()]+', '+d.getDate()+' de '+meses[d.getMonth()]+' de '+d.getFullYear();
+  return 'Você é o Peter, também chamado de Cabeça de Teia, assistente pessoal do usuário. '+
+  'Personalidade: inspirado no Peter Parker da Marvel — esperto, informal, bem-humorado, direto, em português brasileiro coloquial. '+
+  'Suas respostas são LIDAS EM VOZ ALTA: escreva frases fluidas, sem markdown, sem listas com asterisco, sem emoji, sem títulos. '+
+  'Seja completo mas econômico, em geral de duas a cinco frases. Em assunto técnico, explique de verdade.\n\n'+
+  'HOJE É '+hoje+'. Essa data vem do aparelho do usuário e é confiável. '+
+  'Seu treinamento parou antes de hoje, então você não conhece acontecimentos recentes por conta própria. '+
+  'Se a pergunta envolver algo atual — notícias, lançamentos, preços, quem ocupa um cargo, se algo já saiu — pesquise antes de responder. '+
+  'Nunca diga que algo ainda não aconteceu apoiado só na sua memória: ela está atrasada.';
 }
 
-function ask(text){
-  var key=keyIn.value.trim();
-  if(!key){ add('err','Falta a chave. Cola lá em cima.'); return; }
-
-  add('user',text);
-  convo.push({role:'user',content:text});
-  var pending=add('bot','...');
-  statusEl.textContent='pensando...';
-
+/* ---------------- chamada à IA ---------------- */
+function callAI(msgs,sys,useWeb){
+  var key=keyOf();
+  if(!key) return Promise.reject(new Error('SEM_CHAVE'));
   var url,opts;
 
-  if(provIn.value==='claude'){
+  if(P.prov==='claude'){
+    var body={model:modelOf(),max_tokens:800,system:sys,messages:msgs};
+    if(useWeb) body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:3}];
     url='https://api.anthropic.com/v1/messages';
-    opts={
-      method:'POST',
-      headers:{
-        'content-type':'application/json',
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({model:modelIn.value,max_tokens:800,system:SYSTEM,messages:convo})
-    };
+    opts={method:'POST',headers:{
+      'content-type':'application/json','x-api-key':key,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'
+    },body:JSON.stringify(body)};
   }else{
-    var contents=convo.map(function(m){
-      return {role:(m.role==='assistant'?'model':'user'),parts:[{text:m.content}]};
-    });
-    url='https://generativelanguage.googleapis.com/v1beta/models/'+modelIn.value+':generateContent?key='+encodeURIComponent(key);
-    opts={
-      method:'POST',
-      headers:{'content-type':'application/json'},
-      body:JSON.stringify({
-        system_instruction:{parts:[{text:SYSTEM}]},
-        contents:contents,
-        generationConfig:{maxOutputTokens:800}
-      })
+    var b={
+      system_instruction:{parts:[{text:sys}]},
+      contents:msgs.map(function(m){return {role:(m.role==='assistant'?'model':'user'),parts:[{text:m.content}]};}),
+      generationConfig:{maxOutputTokens:800}
     };
+    if(useWeb) b.tools=[{google_search:{}}];
+    url='https://generativelanguage.googleapis.com/v1beta/models/'+modelOf()+':generateContent?key='+encodeURIComponent(key);
+    opts={method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)};
   }
 
-  fetch(url,opts).then(function(r){
+  return fetch(url,opts).then(function(r){
     return r.text().then(function(raw){
       var data;
       try{ data=JSON.parse(raw); }
       catch(e){
-        var trecho=raw.slice(0,200);
-        throw new Error('A resposta não veio da API — veio um HTML.\n'+
-          'Isso quase sempre é firewall/proxy da rede bloqueando o endereço.\n'+
-          'Tente por dados móveis (4G) ou outra rede.\n\nInício da resposta:\n'+trecho);
+        var err=new Error('BLOQUEIO'); err.detail=raw.slice(0,180); throw err;
       }
-      return {ok:r.ok,status:r.status,data:data};
+      if(!r.ok){
+        var e2=new Error('API'); e2.code=r.status;
+        e2.detail=(data.error&&data.error.message)||JSON.stringify(data);
+        throw e2;
+      }
+      var out='';
+      if(P.prov==='claude'){
+        out=(data.content||[]).map(function(b){return b.text||'';}).join('');
+      }else{
+        var c=(data.candidates||[])[0];
+        if(c&&c.content&&c.content.parts) out=c.content.parts.map(function(p){return p.text||'';}).join('');
+      }
+      out=out.trim();
+      if(!out){ var e3=new Error('VAZIO'); e3.detail=JSON.stringify(data).slice(0,300); throw e3; }
+      return out;
     });
-  }).then(function(res){
-    if(!res.ok){
-      pending.remove(); convo.pop();
-      add('err','ERRO '+res.status+'\n'+JSON.stringify(res.data,null,2));
-      statusEl.textContent='erro '+res.status;
-      return;
-    }
-    var reply='';
-    if(provIn.value==='claude'){
-      reply=res.data.content.map(function(b){return b.text||'';}).join('').trim();
-    }else{
-      var c=res.data.candidates&&res.data.candidates[0];
-      if(c&&c.content&&c.content.parts){
-        reply=c.content.parts.map(function(p){return p.text||'';}).join('').trim();
-      }
-    }
-    if(!reply){
-      pending.remove(); convo.pop();
-      add('err','Resposta vazia:\n'+JSON.stringify(res.data,null,2));
-      statusEl.textContent='vazio';
-      return;
-    }
-    pending.textContent=reply;
-    convo.push({role:'assistant',content:reply});
-    speak(reply);
-  }).catch(function(e){
-    pending.remove(); convo.pop();
-    add('err','NÃO CONSEGUI FALAR COM A API\n'+e.message);
-    statusEl.textContent='falhou';
   });
 }
 
-function speak(t){
-  try{
-    speechSynthesis.cancel();
-    var u=new SpeechSynthesisUtterance(t);
-    u.lang='pt-BR'; u.rate=1.02; u.pitch=1.05;
-    u.onstart=function(){statusEl.textContent='falando...';};
-    u.onend=function(){statusEl.textContent='pronto';};
-    speechSynthesis.speak(u);
-  }catch(e){ statusEl.textContent='pronto'; }
+/* ---------------- transcrição ---------------- */
+var convo=[];
+function clearBlank(){ if(blank&&blank.parentNode){ blank.parentNode.removeChild(blank); blank=null; } }
+function scrollDown(){ stage.scrollTop=stage.scrollHeight; }
+
+function addTurn(question){
+  clearBlank();
+  var t=document.createElement('div'); t.className='turn';
+  var q=document.createElement('div'); q.className='asked'; q.textContent=question;
+  var a=document.createElement('div'); a.className='said serif';
+  a.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';
+  t.appendChild(q); t.appendChild(a); stage.appendChild(t); scrollDown();
+  a.turn=t;
+  return a;
 }
 
+function addNote(title,body,detail){
+  clearBlank();
+  var t=document.createElement('div'); t.className='turn';
+  var n=document.createElement('div'); n.className='note';
+  var b=document.createElement('b'); b.textContent=title; n.appendChild(b);
+  n.appendChild(document.createTextNode(body));
+  if(detail){ var pre=document.createElement('pre'); pre.textContent=detail; n.appendChild(pre); }
+  t.appendChild(n); stage.appendChild(t); scrollDown();
+}
+
+/* palavras acendendo junto com a voz */
+function layWords(el,text){
+  el.innerHTML='';
+  var parts=text.split(/(\s+)/), marks=[], pos=0;
+  parts.forEach(function(p){
+    if(/^\s+$/.test(p)){ el.appendChild(document.createTextNode(p)); }
+    else if(p.length){
+      var w=document.createElement('w'); w.textContent=p;
+      w.dataset.at=pos; el.appendChild(w); marks.push(w);
+    }
+    pos+=p.length;
+  });
+  return marks;
+}
+
+function speak(text,el){
+  var marks=layWords(el,text);
+  var i=0, gotBoundary=false, timer=null;
+
+  function light(n){
+    while(i<=n&&i<marks.length){ marks[i].className='lit'; i++; }
+    var cur=marks[Math.min(i,marks.length)-1];
+    if(cur&&cur.scrollIntoView) cur.scrollIntoView({block:'nearest'});
+  }
+  function finish(){
+    if(timer) clearInterval(timer);
+    el.classList.add('done');
+    hint.textContent='toque para falar · ';
+    hint.appendChild(kbLink());
+    live.classList.remove('on');
+  }
+
+  if(!('speechSynthesis' in window)){ el.classList.add('done'); return; }
+
+  try{ speechSynthesis.cancel(); }catch(e){}
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang='pt-BR'; u.rate=1.02; u.pitch=1.05;
+
+  u.onstart=function(){
+    live.classList.add('on');
+    hint.textContent='falando';
+    hint.className='hint warm';
+    // se o navegador não emitir fronteiras de palavra, revela por tempo
+    timer=setInterval(function(){
+      if(gotBoundary){ clearInterval(timer); return; }
+      light(i);
+    },230);
+  };
+  u.onboundary=function(e){
+    gotBoundary=true;
+    if(timer){ clearInterval(timer); timer=null; }
+    var idx=0;
+    for(var k=0;k<marks.length;k++){ if(+marks[k].dataset.at<=e.charIndex) idx=k; }
+    light(idx);
+  };
+  u.onend=function(){ light(marks.length); finish(); };
+  u.onerror=function(){ light(marks.length); finish(); };
+  speechSynthesis.speak(u);
+}
+
+function kbLink(){
+  var u=document.createElement('u'); u.id='kb'; u.textContent='escrever';
+  u.style.cursor='pointer'; u.onclick=toggleWrite; return u;
+}
+
+/* ---------------- perguntar ---------------- */
+var busy=false;
+function ask(question){
+  if(busy) return;
+  busy=true;
+  var slot=addTurn(question);
+  convo.push({role:'user',content:question});
+  hint.textContent='pensando'; hint.className='hint warm';
+
+  callAI(convo,systemText(),P.web).then(function(answer){
+    convo.push({role:'assistant',content:answer});
+    speak(answer,slot);
+    busy=false;
+  }).catch(function(e){
+    busy=false;
+    if(slot.turn&&slot.turn.parentNode) slot.turn.parentNode.removeChild(slot.turn);
+    convo.pop();
+    hint.textContent='toque para falar · '; hint.className='hint'; hint.appendChild(kbLink());
+    live.classList.remove('on');
+    reportError(e);
+  });
+}
+
+function reportError(e){
+  if(e.message==='SEM_CHAVE'){
+    addNote('Falta a chave','Abra os ajustes no canto superior e cole a chave do serviço escolhido.');
+    openSheet();
+  }else if(e.message==='BLOQUEIO'){
+    addNote('A rede bloqueou o acesso','A resposta veio de um filtro da rede, não do serviço de IA. Tente por dados móveis ou outra rede.',e.detail);
+  }else if(e.code===429){
+    addNote('Cota esgotada','O serviço recusou por limite de uso. Espere alguns minutos, troque de modelo nos ajustes, ou desligue as notícias e a pesquisa na web para gastar menos.',e.detail);
+  }else if(e.code===401||e.code===403){
+    addNote('Chave recusada','Confira a chave nos ajustes. Ela precisa ser do serviço selecionado.',e.detail);
+  }else if(e.code===404){
+    addNote('Modelo indisponível','Esse modelo saiu do ar ou não existe na sua conta. Escolha outro nos ajustes.',e.detail);
+  }else if(e.code===400&&/credit|billing/i.test(e.detail||'')){
+    addNote('Sem crédito','A conta não tem saldo para responder. Adicione crédito ou troque de serviço nos ajustes.',e.detail);
+  }else{
+    addNote('Não deu para responder',(e.detail||e.message||'Erro desconhecido').slice(0,300));
+  }
+}
+
+/* ---------------- voz entrando ---------------- */
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-var rec=null,on=false;
+var rec=null,listening=false;
 if(SR){
   rec=new SR(); rec.lang='pt-BR'; rec.continuous=false; rec.interimResults=false;
-  rec.onstart=function(){on=true;micBtn.classList.add('on');statusEl.textContent='ouvindo...';};
-  rec.onend=function(){on=false;micBtn.classList.remove('on');};
+  rec.onstart=function(){ listening=true; micBtn.classList.add('on'); hint.textContent='ouvindo'; hint.className='hint warm'; };
+  rec.onend=function(){
+    listening=false; micBtn.classList.remove('on');
+    if(!busy&&hint.textContent==='ouvindo'){
+      hint.textContent='toque para falar · '; hint.className='hint'; hint.appendChild(kbLink());
+    }
+  };
   rec.onerror=function(e){
-    on=false;micBtn.classList.remove('on');
-    statusEl.textContent='mic: '+e.error;
-    if(e.error==='not-allowed') add('err','Microfone bloqueado. Libera a permissão do site no navegador.');
+    listening=false; micBtn.classList.remove('on');
+    hint.textContent='toque para falar · '; hint.className='hint'; hint.appendChild(kbLink());
+    if(e.error==='not-allowed') addNote('Microfone bloqueado','Libere a permissão de microfone para este site nas configurações do navegador.');
   };
   rec.onresult=function(e){
-    var t=e.results[0][0].transcript.trim();
+    var t=(e.results[0][0].transcript||'').trim();
     if(t) ask(t);
   };
 }else{
-  micBtn.disabled=true; micBtn.textContent='X';
+  micBtn.style.opacity='.35';
 }
 
 micBtn.onclick=function(){
-  if(!rec) return;
-  speechSynthesis.cancel();
-  if(on){ rec.stop(); } else { rec.start(); }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(!rec){ toggleWrite(); return; }
+  if(listening) rec.stop(); else { try{ rec.start(); }catch(e){} }
 };
 
-function sendText(){
-  var t=txt.value.trim();
-  if(!t) return;
-  txt.value='';
-  ask(t);
+/* ---------------- escrever ---------------- */
+function toggleWrite(){
+  write.classList.toggle('open');
+  if(write.classList.contains('open')) txt.focus();
 }
-document.getElementById('send').onclick=sendText;
+$('kb').onclick=toggleWrite;
+function sendText(){
+  var t=txt.value.trim(); if(!t) return;
+  txt.value=''; ask(t);
+}
+$('send').onclick=sendText;
 txt.addEventListener('keydown',function(e){ if(e.key==='Enter') sendText(); });
+
+/* ---------------- notícias ---------------- */
+var feed=[],feedAt=0,rot=null;
+
+function showHeadline(){
+  if(!feed.length) return;
+  headline.classList.add('out');
+  setTimeout(function(){
+    headline.textContent=feed[feedAt%feed.length];
+    headline.classList.remove('placeholder','out');
+    feedAt++;
+    tick.className=''; void tick.offsetWidth; tick.className='run';
+  },380);
+}
+
+function startRotation(){
+  showHeadline();
+  if(rot) clearInterval(rot);
+  rot=setInterval(showHeadline,7000);
+}
+
+function loadNews(){
+  if(!P.news){ headline.textContent='Notícias desligadas nos ajustes.'; return; }
+  var cache=null;
+  try{ cache=JSON.parse(localStorage.getItem('feed')||'null'); }catch(e){}
+  if(cache&&cache.items&&cache.items.length&&(Date.now()-cache.at)<3*3600*1000){
+    feed=cache.items; startRotation(); return;
+  }
+  if(!keyOf()){ headline.textContent='Cole sua chave nos ajustes para começar.'; return; }
+
+  headline.textContent='Buscando as manchetes de hoje…';
+  var pedido='Liste as seis notícias mais importantes de hoje, misturando Brasil e mundo. '+
+    'Uma por linha. Cada linha é uma frase curta e informativa, no máximo noventa caracteres. '+
+    'Sem numeração, sem aspas, sem markdown, sem comentários seus.';
+  callAI([{role:'user',content:pedido}],
+    'Você resume notícias do dia com precisão e sem opinião. Responda apenas com as linhas pedidas.',
+    true
+  ).then(function(out){
+    var items=out.split('\n').map(function(s){return s.replace(/^[\s\-–—•*\d.)]+/,'').trim();})
+                 .filter(function(s){return s.length>12;}).slice(0,6);
+    if(!items.length){ headline.textContent='Sem manchetes agora.'; return; }
+    feed=items;
+    localStorage.setItem('feed',JSON.stringify({at:Date.now(),items:items}));
+    startRotation();
+  }).catch(function(e){
+    headline.textContent = e.message==='SEM_CHAVE' ? 'Cole sua chave nos ajustes para começar.'
+      : e.code===429 ? 'Cota esgotada. As notícias voltam mais tarde.'
+      : 'Não consegui buscar as notícias agora.';
+  });
+}
+
+$('news').onclick=function(){
+  if(!feed.length) return;
+  clearBlank();
+  var t=document.createElement('div'); t.className='turn';
+  var q=document.createElement('div'); q.className='asked'; q.textContent='manchetes de hoje';
+  var a=document.createElement('div'); a.className='said serif done';
+  a.textContent=feed.join('. ')+'.';
+  t.appendChild(q); t.appendChild(a); stage.appendChild(t); scrollDown();
+};
+
+/* ---------------- painel ---------------- */
+var sheet=$('sheet'),veil=$('veil'),modelSel=$('model'),keyIn=$('key'),
+    swWeb=$('swWeb'),swNews=$('swNews'),seg=$('seg');
+
+function paintSheet(){
+  Array.prototype.forEach.call(seg.children,function(b){
+    b.className = b.dataset.p===P.prov ? 'sel' : '';
+  });
+  modelSel.innerHTML='';
+  MODELS[P.prov].forEach(function(m){
+    var o=document.createElement('option'); o.value=m[0]; o.textContent=m[1];
+    modelSel.appendChild(o);
+  });
+  modelSel.value=modelOf();
+  keyIn.value=localStorage.getItem('key_'+P.prov)||'';
+  keyIn.placeholder = P.prov==='gemini' ? 'Chave do Google AI Studio' : 'Chave da Anthropic';
+  swWeb.className = P.web?'sw on':'sw';
+  swNews.className = P.news?'sw on':'sw';
+}
+function openSheet(){ paintSheet(); veil.classList.add('open'); sheet.classList.add('open'); }
+function closeSheet(){ veil.classList.remove('open'); sheet.classList.remove('open'); }
+$('gear').onclick=openSheet;
+veil.onclick=closeSheet;
+
+Array.prototype.forEach.call(seg.children,function(b){
+  b.onclick=function(){
+    P.prov=b.dataset.p; localStorage.setItem('prov',P.prov);
+    convo=[]; paintSheet();
+  };
+});
+modelSel.onchange=function(){ localStorage.setItem('model_'+P.prov,modelSel.value); };
+keyIn.oninput=function(){ localStorage.setItem('key_'+P.prov,keyIn.value.trim()); };
+swWeb.onclick=function(){ P.web=!P.web; localStorage.setItem('web',P.web?'1':'0'); paintSheet(); };
+swNews.onclick=function(){
+  P.news=!P.news; localStorage.setItem('news_on',P.news?'1':'0'); paintSheet();
+  if(P.news&&!feed.length) loadNews();
+  if(!P.news){ if(rot) clearInterval(rot); headline.textContent='Notícias desligadas nos ajustes.'; }
+};
+
+/* ---------------- partida ---------------- */
+loadNews();
+if(!keyOf()) setTimeout(openSheet,600);
 </script>
 </body>
 </html>
