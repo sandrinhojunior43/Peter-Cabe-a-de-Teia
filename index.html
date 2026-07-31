@@ -1,712 +1,174 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#C41E3A">
-    <title>Peter - Cabeça de Teia</title>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background: #0A0A0A;
-            color: #FFFFFF;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
-            border: 3px solid #C41E3A;
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            height: 90vh;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(196, 30, 58, 0.4);
-        }
-
-        .header {
-            background: linear-gradient(90deg, #C41E3A 0%, #8B1729 100%);
-            padding: 20px;
-            border-bottom: 3px solid #FFFFFF;
-            text-align: center;
-            position: relative;
-        }
-
-        .header-title {
-            font-family: 'Righteous', sans-serif;
-            font-size: 32px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-shadow: 3px 3px 0px #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .header-title::before {
-            content: '🕷️';
-            font-size: 36px;
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .message {
-            display: flex;
-            gap: 10px;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .message.user {
-            justify-content: flex-end;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message-bubble {
-            max-width: 85%;
-            padding: 12px 14px;
-            border-radius: 2px;
-            font-size: 13px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .user .message-bubble {
-            background: #C41E3A;
-            color: #FFFFFF;
-            border: 2px solid #FFFFFF;
-            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
-        }
-
-        .assistant .message-bubble {
-            background: rgba(255, 255, 255, 0.95);
-            color: #0A0A0A;
-            border: 2px solid #C41E3A;
-            box-shadow: 3px 3px 0px rgba(196, 30, 58, 0.3);
-        }
-
-        .peter-badge {
-            display: inline-block;
-            background: #C41E3A;
-            color: #FFFFFF;
-            padding: 2px 6px;
-            border-radius: 2px;
-            font-size: 9px;
-            font-weight: 700;
-            margin-right: 6px;
-        }
-
-        .thinking {
-            padding: 12px 14px;
-            background: rgba(196, 30, 58, 0.15);
-            border: 2px solid #C41E3A;
-            border-radius: 2px;
-            font-size: 12px;
-            color: #FFB3B3;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #C41E3A;
-            animation: pulse 1.4s infinite;
-        }
-
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes pulse {
-            0%, 60%, 100% { opacity: 0.3; }
-            30% { opacity: 1; }
-        }
-
-        .controls {
-            padding: 15px;
-            background: linear-gradient(180deg, #1A1A1A 0%, #0A0A0A 100%);
-            border-top: 3px solid #C41E3A;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 16px;
-            border: 3px solid;
-            border-radius: 2px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: 'Righteous', sans-serif;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary {
-            background: #C41E3A;
-            color: #FFFFFF;
-            border-color: #FFFFFF;
-            flex: 1;
-            min-height: 45px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-primary:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-primary.recording {
-            animation: recordPulse 0.6s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(196, 30, 58, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.5);
-        }
-
-        @keyframes recordPulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(196, 30, 58, 0.6), 4px 4px 0px rgba(0, 0, 0, 0.5); }
-            50% { box-shadow: 0 0 25px rgba(196, 30, 58, 0.9), 4px 4px 0px rgba(0, 0, 0, 0.5); }
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: #C41E3A;
-            border-color: #C41E3A;
-            min-height: 45px;
-        }
-
-        .status {
-            text-align: center;
-            font-size: 10px;
-            color: #FFB3B3;
-            padding: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #C41E3A;
-            border-radius: 3px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peter</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#111;color:#eee;height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:640px;display:flex;flex-direction:column;height:100vh;border-left:1px solid #333;border-right:1px solid #333}
+header{padding:14px;background:#1a1a1a;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;font-weight:600}
+.cfg{padding:10px 14px;background:#161616;border-bottom:1px solid #333;display:flex;gap:8px;flex-wrap:wrap}
+.cfg input,.cfg select{flex:1;min-width:140px;padding:8px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:6px;font-size:13px}
+#chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:10px 13px;border-radius:12px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+.user{align-self:flex-end;background:#c41e3a}
+.bot{align-self:flex-start;background:#242424;border:1px solid #383838}
+.err{align-self:flex-start;background:#3a1414;border:1px solid #a33;font-size:12px;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-width:100%}
+.hint{color:#777;font-size:13px;text-align:center;margin:auto;padding:20px;line-height:1.6}
+footer{padding:12px;background:#1a1a1a;border-top:1px solid #333;display:flex;gap:8px}
+#txt{flex:1;padding:11px;background:#0d0d0d;border:1px solid #444;color:#eee;border-radius:8px;font-size:14px}
+button{padding:11px 14px;border:0;border-radius:8px;background:#c41e3a;color:#fff;font-size:15px;cursor:pointer}
+button:active{opacity:.7}
+#mic.on{background:#fff;color:#c41e3a;animation:p .8s infinite}
+@keyframes p{50%{opacity:.5}}
+#status{font-size:11px;color:#888;padding:6px 14px;background:#141414;text-align:center}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-title">Peter</div>
-        </div>
+<div class="app">
+  <header><span>🕷️</span><h1>Peter</h1></header>
 
-        <div class="chat-container" id="chatContainer">
-            <div class="empty-state">
-                <div class="empty-state-icon">🕷️</div>
-                <p>E aí? Tudo certo?</p>
-                <p style="font-size: 11px; margin-top: 10px;">Aperte no microfone e pergunte algo</p>
-            </div>
-        </div>
+  <div class="cfg">
+    <input type="password" id="key" placeholder="Cole sua chave sk-ant-...">
+    <select id="model">
+      <option value="claude-sonnet-4-5">Sonnet 4.5</option>
+      <option value="claude-haiku-4-5">Haiku 4.5 (mais barato)</option>
+      <option value="claude-3-5-sonnet-20241022">Sonnet 3.5</option>
+      <option value="claude-3-5-haiku-20241022">Haiku 3.5</option>
+    </select>
+  </div>
 
-        <div class="controls">
-            <button class="btn btn-primary" id="micBtn">
-                <span id="micText">🎤 Fale</span>
-            </button>
-            <button class="btn btn-secondary" id="clearBtn">🗑️ Chat</button>
-        </div>
-        
-        <div class="status" id="status">Pronto para ouvir</div>
-    </div>
+  <div id="chat"><div class="hint">Cole sua chave da API acima.<br>Depois digite ou aperte o microfone e fale.</div></div>
+  <div id="status">pronto</div>
 
-    <script>
-        // Elementos do DOM
-        const chatContainer = document.getElementById('chatContainer');
-        const micBtn = document.getElementById('micBtn');
-        const micText = document.getElementById('micText');
-        const clearBtn = document.getElementById('clearBtn');
-        const statusDiv = document.getElementById('status');
+  <footer>
+    <input id="txt" placeholder="Escreve aqui...">
+    <button id="send">&#10148;</button>
+    <button id="mic">&#127908;</button>
+  </footer>
+</div>
 
-        // Variáveis de estado
-        let recognition;
-        let isRecording = false;
-        let conversationHistory = [];
+<script>
+const chat=document.getElementById('chat'),txt=document.getElementById('txt'),
+      keyIn=document.getElementById('key'),modelIn=document.getElementById('model'),
+      status=document.getElementById('status'),micBtn=document.getElementById('mic');
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const synth = window.speechSynthesis;
+const SYSTEM = `Você é o Peter, também chamado de Cabeça de Teia, assistente pessoal do usuário.
+Personalidade: inspirado no Peter Parker da Marvel — esperto, informal, bem-humorado, direto, fala português brasileiro coloquial.
+Suas respostas serão LIDAS EM VOZ ALTA, então: seja natural, sem markdown, sem listas com asterisco, sem emoji, frases fluidas.
+Responda de forma completa mas concisa (2 a 5 frases normalmente). Se o assunto for técnico, explica de verdade, sem enrolar.`;
 
-        // ===== BASE DE CONHECIMENTO EXPANDIDA =====
-        const peterKnowledge = {
-            greeting: {
-                keywords: ['oi', 'olá', 'opa', 'e aí', 'como vai', 'tudo bem', 'fala', 'e aí'],
-                responses: [
-                    'E aí! Tudo certo? Só fala comigo, tô aqui pra responder tudo que você quiser!',
-                    'Opa! Tô na ativa! O que você precisa saber?',
-                    'Fala! Diz aí, estou pronto!',
-                    'E aí, meu parceiro! Bora conversar!',
-                    'Opa opa opa! Tô de prontidão!'
-                ]
-            },
-            name: {
-                keywords: ['qual seu nome', 'quem você é', 'se chama', 'chamam', 'nome'],
-                responses: [
-                    'Sou Peter, o Cabeça de Teia! Seu assistente pessoal inspirado no Homem-Aranha. Bora conversar?',
-                    'Peter! Peter Parker se quiser ser formal, mas é Peter mesmo! Como posso te ajudar?'
-                ]
-            },
-            help: {
-                keywords: ['como você funciona', 'o que você faz', 'ajuda', 'help', 'como usar'],
-                responses: [
-                    'Sou teu assistente conversacional! Você fala, eu escuto, entendo e respondo em voz alta! Tenho conhecimento em muitos tópicos. É só falar que te ajudo!',
-                    'Simples: você fala comigo, eu entendo, respondo pra você e ainda falo em voz alta! Prático, né?'
-                ]
-            },
-            // FÍSICA
-            fisica: {
-                keywords: ['física', 'gravidade', 'energia', 'movimento', 'força', 'velocidade', 'aceleração'],
-                responses: [
-                    'Física é a ciência que estuda a matéria, energia e movimento! Temos mecânica clássica, termodinâmica, eletromagnetismo e física quântica. Qual área te interessa?',
-                    'A física explica como o universo funciona! Desde objetos que caem até como as estrelas brilham. Tudo segue as leis da física!'
-                ]
-            },
-            // TEORIA DAS CORDAS
-            cordas: {
-                keywords: ['teoria das cordas', 'cordas', 'string theory', 'dimensões extra', 'vibração'],
-                responses: [
-                    'A Teoria das Cordas é foda! Ela propõe que as partículas fundamentais não são pontos, mas pequenas cordas vibrando! Cada modo de vibração corresponde a uma partícula diferente. Imagina: tudo que existe é feito de cordas vibrando em 11 dimensões!',
-                    'Teoria das Cordas é tentativa de unificar a relatividade geral com a mecânica quântica! Cordas microscópicas vibram em diferentes frequências e criam toda a realidade. É tipo música do universo, mano!'
-                ]
-            },
-            // ASTRONOMIA
-            astronomia: {
-                keywords: ['astronomia', 'estrelas', 'galáxias', 'universo', 'planetas', 'Sol', 'Lua', 'espaço'],
-                responses: [
-                    'Astronomia estuda o cosmos! Temos bilhões de galáxias, cada uma com bilhões de estrelas. A gente tá num braço da Via Láctea, perdido num universo gigantesco!',
-                    'O universo é IMENSO! O Sol é só uma estrela entre bilhões, a Terra é minúscula comparada com ele. E tem coisa ainda maior: buracos negros, supernovas, galáxias colindindo!'
-                ]
-            },
-            // MATEMÁTICA
-            matematica: {
-                keywords: ['matemática', 'equação', 'número', 'cálculo', 'álgebra', 'geometria', 'Pi'],
-                responses: [
-                    'Matemática é a linguagem do universo! Serve pra tudo: desde calcular trajetórias de foguetes até entender padrões na natureza. É bela e poderosa demais!',
-                    'Tá em tudo! Desde quando você paga uma pizza até no GPS do seu celular. Matemática é essencial, mano!'
-                ]
-            },
-            // QUÍMICA
-            quimica: {
-                keywords: ['química', 'elemento', 'reação', 'molécula', 'átomo', 'tabela periódica'],
-                responses: [
-                    'Química é a ciência dos elementos! Temos 118 elementos conhecidos, cada um com propriedades únicas. Quando se combinam, rolam reações incríveis que transformam a matéria!',
-                    'É basicamente o estudo do que as coisas são feitas e como se transformam! Combustão, síntese, tudo envolve química!'
-                ]
-            },
-            // BIOLOGIA
-            biologia: {
-                keywords: ['biologia', 'célula', 'DNA', 'evolução', 'vida', 'organismo', 'gene'],
-                responses: [
-                    'Biologia é o estudo da vida! DNA, evolução, células... tudo que tá vivo segue as leis da biologia. É fascinante como a vida se adaptou ao longo de bilhões de anos!',
-                    'Toda vida que existe tem DNA! É como um código que determina suas características. A evolução moldou tudo que vemos hoje ao longo de milhões de anos!'
-                ]
-            },
-            // HISTÓRIA
-            historia: {
-                keywords: ['história', 'guerra', 'império', 'revolução', 'era', 'século', 'civilização'],
-                responses: [
-                    'História é a narrativa do passado! Temos civilizações antigas como Egito e Roma, Idade Média, Renascimento, Iluminismo... cada era moldou o mundo que temos hoje.',
-                    'Entender história é entender por que o mundo é assim! Guerras, explorações, descobertas científicas... tudo conectado!'
-                ]
-            },
-            // TECNOLOGIA
-            tecnologia: {
-                keywords: ['tecnologia', 'inteligência artificial', 'computador', 'internet', 'software', 'hardware', 'código'],
-                responses: [
-                    'Tecnologia é insana! De computadores quânticos até AI, estamos numa era de transformação. Código é basicamente instruções que fazem máquinas fazer coisas incríveis!',
-                    'Internet conectou o mundo inteiro! E agora AI tá mudando tudo de novo. Tecnologia evolui rápido demais!'
-                ]
-            },
-            // FILOSOFIA
-            filosofia: {
-                keywords: ['filosofia', 'existência', 'verdade', 'moral', 'ética', 'sentido', 'propósito'],
-                responses: [
-                    'Filosofia pergunta as grandes questões! O que é verdade? Por que existimos? Qual é o certo? Não tem respostas fáceis, mas perguntar é importante!',
-                    'Desde Sócrates até agora, filósofos pensam nos mistérios da existência. É basicamente o desejo de entender a realidade de verdade!'
-                ]
-            },
-            // PSICOLOGIA
-            psicologia: {
-                keywords: ['psicologia', 'mente', 'comportamento', 'emoção', 'inconsciente', 'personalidade'],
-                responses: [
-                    'Psicologia estuda a mente e o comportamento! Como pensamos, sentimos, agimos... A mente é mais complexa que a gente imagina!',
-                    'A mente humana é fascinante! Temos memória, emoções, inconsciente... tudo trabalhando junto pra criar quem somos!'
-                ]
-            },
-            // GEOLOGIA
-            geologia: {
-                keywords: ['geologia', 'rocha', 'terremoto', 'vulcão', 'placa tectônica', 'mineral'],
-                responses: [
-                    'Geologia é o estudo da Terra! Temos placas tectônicas se movendo, vulcões explodindo, terremotos acontecendo... o planeta tá vivo!',
-                    'A Terra tem 4,5 bilhões de anos! Passou por mudanças massivas, extinções, glaciações. O planeta tá sempre mudando!'
-                ]
-            },
-            // ECONOMIA
-            economia: {
-                keywords: ['economia', 'dinheiro', 'mercado', 'investimento', 'bolsa', 'moeda', 'oferta', 'demanda'],
-                responses: [
-                    'Economia é como o dinheiro flui! Oferta, demanda, preços, mercados... tudo conectado. Entender economia ajuda a entender o mundo!',
-                    'Mercados funcionam por causa de pessoas fazendo escolhas! Preços mudam, bolsa de valores oscila, tudo é movimento!'
-                ]
-            },
-            // POLÍTICA
-            politica: {
-                keywords: ['política', 'governo', 'democracia', 'votação', 'presidente', 'lei', 'poder'],
-                responses: [
-                    'Política é sobre poder e como a sociedade se organiza! Democracia, ditadura, monarquia... diferentes sistemas com diferentes resultados.',
-                    'Cada país tem seu próprio jeito de se governar! Leis, constituições, eleições... tudo pra tentar organizar a sociedade!'
-                ]
-            },
-            // ARTE
-            arte: {
-                keywords: ['arte', 'pintura', 'escultura', 'música', 'dança', 'teatro', 'criatividade'],
-                responses: [
-                    'Arte é expressão! Desde Michelangelo até agora, artistas criam obras que falam com a alma. Pintura, música, dança... tudo é arte!',
-                    'Criatividade é tudo! Sem arte, o mundo seria chato demais. Música, filmes, quadrinhos... tudo vem da imaginação!'
-                ]
-            },
-            // HOMEM ARANHA
-            homem_aranha: {
-                keywords: ['homem aranha', 'spider-man', 'peter parker', 'teia', 'tiro teia', 'poder'],
-                responses: [
-                    'Homem-Aranha é meu ídolo! Peter Parker, garoto com superpoderes, usa sua força pra proteger as pessoas. "Com grande poder vem grande responsabilidade" - essa é a vida!',
-                    'Cara, Homem-Aranha é foda! Teia, agilidade, força... e ainda tem que lidar com seus problemas pessoais. É um herói de verdade!'
-                ]
-            },
-            // PIADAS/HUMOR
-            piada: {
-                keywords: ['piada', 'humor', 'engraçado', 'me fazer rir', 'conta uma piada', 'brincadeira'],
-                responses: [
-                    'Ó o cara! Por que a aranha é boa em programação? Porque ela trabalha com teia! Hahahaha!',
-                    'Por que Homem-Aranha odeia o Windows? Porque precisa de Chrome pra funcionar! Ahahaha!',
-                    'Qual o nome da garota-aranha? Mary Jane! Tá bom, essa foi fraca!',
-                    'Um físico tá no bar... não, espera, isso é piada de físico! Hahahaha'
-                ]
-            },
-            // CULINÁRIA
-            culinaria: {
-                keywords: ['comida', 'receita', 'cozinha', 'pizza', 'comidas', 'prato', 'cozinhar'],
-                responses: [
-                    'Culinária é arte com gosto! Diferentes culturas têm pratos únicos. Cozinhar é ciência e criatividade misturadas!',
-                    'Comida boa une as pessoas! Desde um bolo simples até pratos sofisticados, tudo pode ser delicioso!'
-                ]
-            },
-            // SAÚDE
-            saude: {
-                keywords: ['saúde', 'exercício', 'dieta', 'medicina', 'corpo', 'doença', 'bem-estar'],
-                responses: [
-                    'Saúde é importante demais! Exercício, alimentação equilibrada, dormir bem... tudo contribui. Seu corpo é uma máquina perfeita quando bem cuidada!',
-                    'Medicina avançou demais nos últimos anos! Cirurgias, remédios, tratamentos... a gente consegue combater muita coisa!'
-                ]
-            },
-            // ESPORTES
-            esportes: {
-                keywords: ['esportes', 'futebol', 'basquete', 'corrida', 'natação', 'competição'],
-                responses: [
-                    'Esportes são legais demais! Seja futebol, basquete ou qualquer coisa, a competição traz o melhor das pessoas!',
-                    'Atletas são inspiradores! Dedicação, treino, disciplina... esportes ensinam muito sobre vida!'
-                ]
-            },
-            default: {
-                keywords: [],
-                responses: [
-                    'Hmm, interessante! Me conta mais sobre isso!',
-                    'Ó, legal isso! Tá bom, entendi!',
-                    'Ah tá, tipo isso aí! E aí, mais alguma coisa?',
-                    'Opa, entendi o que você quer dizer! Faz sentido!',
-                    'Bacana! Que tópico interessante!'
-                ]
-            }
-        };
+let history=[];
 
-        // ===== RECONHECIMENTO DE VOZ =====
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'pt-BR';
-            recognition.continuous = false;
-            recognition.interimResults = false;
+keyIn.value = localStorage.getItem('anthKey')||'';
+modelIn.value = localStorage.getItem('anthModel')||'claude-sonnet-4-5';
+keyIn.onchange = ()=>localStorage.setItem('anthKey',keyIn.value.trim());
+modelIn.onchange = ()=>localStorage.setItem('anthModel',modelIn.value);
 
-            recognition.onstart = () => {
-                isRecording = true;
-                micBtn.classList.add('recording');
-                micText.textContent = '🎤 Ouvindo...';
-                statusDiv.textContent = '🎤 Fale agora';
-            };
+function add(role,text){
+  if(chat.querySelector('.hint')) chat.innerHTML='';
+  const d=document.createElement('div');
+  d.className='msg '+(role==='user'?'user':role==='err'?'err':'bot');
+  d.textContent=text;
+  chat.appendChild(d); chat.scrollTop=chat.scrollHeight;
+  return d;
+}
 
-            recognition.onend = () => {
-                isRecording = false;
-                micBtn.classList.remove('recording');
-                micText.textContent = '🎤 Fale';
-                statusDiv.textContent = 'Pronto para ouvir';
-            };
+async function ask(text){
+  const key=keyIn.value.trim();
+  if(!key){ add('err','Falta a chave da API. Cola lá em cima.'); return; }
 
-            recognition.onresult = (event) => {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
+  add('user',text);
+  history.push({role:'user',content:text});
+  const pending=add('bot','...');
+  status.textContent='pensando...';
 
-                if (transcript.trim()) {
-                    statusDiv.textContent = '⚡ Processando...';
-                    processUserMessage(transcript);
-                }
-            };
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'content-type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:modelIn.value,
+        max_tokens:800,
+        system:SYSTEM,
+        messages:history
+      })
+    });
 
-            recognition.onerror = (event) => {
-                statusDiv.textContent = `❌ Erro: ${event.error}`;
-            };
-        }
+    const data=await r.json();
 
-        // ===== CONTROLE DO MICROFONE =====
-        micBtn.addEventListener('mousedown', () => {
-            if (recognition && !isRecording) {
-                recognition.start();
-            }
-        });
+    if(!r.ok){
+      pending.remove();
+      history.pop();
+      add('err','ERRO '+r.status+'\n'+JSON.stringify(data,null,2));
+      status.textContent='erro '+r.status;
+      return;
+    }
 
-        micBtn.addEventListener('mouseup', () => {
-            if (recognition && isRecording) {
-                recognition.stop();
-            }
-        });
+    const reply=data.content.map(function(b){return b.text||'';}).join('').trim();
+    pending.textContent=reply;
+    history.push({role:'assistant',content:reply});
+    speak(reply);
 
-        micBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (recognition && !isRecording) {
-                recognition.start();
-            }
-        });
+  }catch(e){
+    pending.remove(); history.pop();
+    add('err','FALHA DE REDE\n'+e.name+': '+e.message);
+    status.textContent='falhou';
+  }
+}
 
-        micBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            if (recognition && isRecording) {
-                recognition.stop();
-            }
-        });
+function speak(t){
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='pt-BR'; u.rate=1.02; u.pitch=1.05;
+    u.onstart=function(){status.textContent='falando...';};
+    u.onend=function(){status.textContent='pronto';};
+    speechSynthesis.speak(u);
+  }catch(e){ status.textContent='pronto'; }
+}
 
-        // ===== PROCESSAR PERGUNTA E RESPONDER =====
-        function processUserMessage(userInput) {
-            const message = userInput.toLowerCase();
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,on=false;
+if(SR){
+  rec=new SR(); rec.lang='pt-BR'; rec.continuous=false; rec.interimResults=false;
+  rec.onstart=function(){on=true;micBtn.classList.add('on');status.textContent='ouvindo...';};
+  rec.onend=function(){on=false;micBtn.classList.remove('on');};
+  rec.onerror=function(e){
+    on=false;micBtn.classList.remove('on');
+    status.textContent='mic: '+e.error;
+    if(e.error==='not-allowed') add('err','Microfone bloqueado. Libera a permissão do site no navegador.');
+  };
+  rec.onresult=function(e){
+    const t=e.results[0][0].transcript.trim();
+    if(t) ask(t);
+  };
+}else{
+  micBtn.disabled=true; micBtn.textContent='X';
+}
 
-            addMessageToUI('user', userInput);
-            conversationHistory.push({
-                role: 'user',
-                content: userInput
-            });
+micBtn.onclick=function(){
+  if(!rec) return;
+  speechSynthesis.cancel();
+  if(on){ rec.stop(); } else { rec.start(); }
+};
 
-            // Mostrar "pensando"
-            const thinkingDiv = document.createElement('div');
-            thinkingDiv.className = 'message assistant';
-            thinkingDiv.innerHTML = `
-                <div class="thinking">
-                    <span>Peter está pensando</span>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
-            `;
-            chatContainer.appendChild(thinkingDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            // Simular processamento
-            setTimeout(() => {
-                thinkingDiv.remove();
-
-                let response = '';
-
-                // Verificar cada categoria de conhecimento
-                for (const [key, category] of Object.entries(peterKnowledge)) {
-                    for (const keyword of category.keywords) {
-                        if (message.includes(keyword)) {
-                            if (typeof category.responses === 'function') {
-                                response = category.responses();
-                            } else {
-                                response = category.responses[Math.floor(Math.random() * category.responses.length)];
-                            }
-                            break;
-                        }
-                    }
-                    if (response) break;
-                }
-
-                // Se não encontrou, usar default
-                if (!response) {
-                    response = peterKnowledge.default.responses[Math.floor(Math.random() * peterKnowledge.default.responses.length)];
-                }
-
-                // Adicionar resposta
-                conversationHistory.push({
-                    role: 'assistant',
-                    content: response
-                });
-
-                addMessageToUI('assistant', response);
-                saveHistory();
-                
-                // FALAR A RESPOSTA
-                speak(response);
-                statusDiv.textContent = '🗣️ Falando...';
-            }, 800);
-        }
-
-        // ===== TEXT TO SPEECH =====
-        function speak(text) {
-            if (synth.speaking) {
-                synth.cancel();
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'pt-BR';
-            utterance.rate = 0.95;
-            utterance.pitch = 1.2;
-            utterance.volume = 1;
-
-            utterance.onend = () => {
-                statusDiv.textContent = 'Pronto para ouvir';
-            };
-
-            synth.speak(utterance);
-        }
-
-        // ===== HISTÓRICO =====
-        function loadHistory() {
-            const saved = localStorage.getItem('peterHistory');
-            if (saved) {
-                conversationHistory = JSON.parse(saved);
-                renderMessages();
-            }
-        }
-
-        function saveHistory() {
-            localStorage.setItem('peterHistory', JSON.stringify(conversationHistory));
-        }
-
-        function renderMessages() {
-            if (conversationHistory.length === 0) {
-                chatContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🕷️</div>
-                        <p>E aí? Tudo certo?</p>
-                        <p style="font-size: 11px; margin-top: 10px;">Aperte no microfone e pergunte algo</p>
-                    </div>
-                `;
-                return;
-            }
-
-            chatContainer.innerHTML = '';
-            conversationHistory.forEach(msg => {
-                addMessageToUI(msg.role, msg.content, false);
-            });
-        }
-
-        function addMessageToUI(role, content, isNew = true) {
-            if (chatContainer.querySelector('.empty-state')) {
-                chatContainer.innerHTML = '';
-            }
-
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
-
-            const bubble = document.createElement('div');
-            bubble.className = 'message-bubble';
-            
-            if (role === 'assistant') {
-                bubble.innerHTML = `<span class="peter-badge">PETER</span>${content}`;
-            } else {
-                bubble.textContent = content;
-            }
-
-            messageDiv.appendChild(bubble);
-            chatContainer.appendChild(messageDiv);
-
-            if (isNew) {
-                setTimeout(() => {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }, 50);
-            }
-        }
-
-        // ===== LIMPAR CHAT =====
-        clearBtn.addEventListener('click', () => {
-            if (confirm('Vai limpar tudo?')) {
-                conversationHistory = [];
-                localStorage.removeItem('peterHistory');
-                renderMessages();
-                statusDiv.textContent = '✨ Chat limpo!';
-                setTimeout(() => {
-                    statusDiv.textContent = 'Pronto para ouvir';
-                }, 2000);
-            }
-        });
-
-        // ===== INICIALIZAR =====
-        loadHistory();
-    </script>
+function sendText(){
+  const t=txt.value.trim();
+  if(!t) return;
+  txt.value='';
+  ask(t);
+}
+document.getElementById('send').onclick=sendText;
+txt.addEventListener('keydown',function(e){ if(e.key==='Enter') sendText(); });
+</script>
 </body>
 </html>
