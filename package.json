@@ -1,0 +1,12 @@
+{
+  "name": "peter-cabeca-teia",
+  "version": "1.0.0",
+  "description": "Assistente inteligente conversacional com IA",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build"
+  },
+  "keywords": ["ia", "assistente", "homem-aranha", "peter"],
+  "author": "Peter",
+  "license": "MIT"
+}
