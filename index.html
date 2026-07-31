@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#C41E3A">
+    <title>Peter - Cabeça de Teia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0A0A0A;
+            color: #FFFFFF;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+            border: 3px solid #C41E3A;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(196, 30, 58, 0.4);
+        }
+
+        .header {
+            background: linear-gradient(90deg, #C41E3A 0%, #8B1729 100%);
+            padding: 20px;
+            border-bottom: 3px solid #FFFFFF;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0px #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-title::before {
+            content: '🕷️';
+            font-size: 36px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .api-section {
+            background: rgba(196, 30, 58, 0.2);
+            border-bottom: 2px dashed #C41E3A;
+            padding: 12px;
+        }
+
+        .api-section label {
+            display: block;
+            font-size: 11px;
+            color: #FFB3B3;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .api-section input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #C41E3A;
+            color: #FFFFFF;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        .api-section input:focus {
+            outline: none;
+            background: rgba(196, 30, 58, 0.1);
+            box-shadow: 0 0 10px rgba(196, 30, 58, 0.5);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 14px;
+            border-radius: 2px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .user .message-bubble {
+            background: #C41E3A;
+            color: #FFFFFF;
+            border: 2px solid #FFFFFF;
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .assistant .message-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            color: #0A0A0A;
+            border: 2px solid #C41E3A;
+            box-shadow: 3px 3px 0px rgba(196, 30, 58, 0.3);
+        }
+
+        .peter-badge {
+            display: inline-block;
+            background: #C41E3A;
+            color: #FFFFFF;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
+        .thinking {
+            padding: 12px 14px;
+            background: rgba(196, 30, 58, 0.15);
+            border: 2px solid #C41E3A;
+            border-radius: 2px;
+            font-size: 12px;
+            color: #FFB3B3;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #C41E3A;
+            animation: pulse 1.4s infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .controls {
+            padding: 15px;
+            background: linear-gradient(180deg, #1A1A1A 0%, #0A0A0A 100%);
+            border-top: 3px solid #C41E3A;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: 3px solid;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Righteous', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #C41E3A;
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+            flex: 1;
+            min-height: 45px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-primary.recording {
+            animation: recordPulse 0.6s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(196, 30, 58, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(196, 30, 58, 0.6), 4px 4px 0px rgba(0, 0, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(196, 30, 58, 0.9), 4px 4px 0px rgba(0, 0, 0, 0.5); }
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #C41E3A;
+            border-color: #C41E3A;
+            min-height: 45px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(196, 30, 58, 0.1);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 10px;
+            color: #FFB3B3;
+            padding: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C41E3A;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">Peter</div>
+        </div>
+
+        <div class="api-section">
+            <label for="apiKey">🔑 Chave API Claude (Anthropic)</label>
+            <input 
+                type="password" 
+                id="apiKey" 
+                placeholder="sk-ant-..." 
+                title="Sua chave será salva localmente no navegador"
+            >
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">🕷️</div>
+                <p>E aí? Tudo certo?</p>
+                <p style="font-size: 11px; margin-top: 10px;">Aperte no microfone e comece a falar</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="micBtn">
+                <span id="micText">🎤 Fale Comigo</span>
+            </button>
+            <button class="btn btn-secondary" id="clearBtn">🗑️ Limpar</button>
+        </div>
+        
+        <div class="status" id="status">Pronto para ouvir</div>
+    </div>
+
+    <script>
+        console.log("🕷️ Peter iniciando...");
+
+        // Elementos do DOM
+        const chatContainer = document.getElementById('chatContainer');
+        const micBtn = document.getElementById('micBtn');
+        const micText = document.getElementById('micText');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusDiv = document.getElementById('status');
+        const apiKeyInput = document.getElementById('apiKey');
+
+        // Variáveis de estado
+        let recognition;
+        let isRecording = false;
+        let conversationHistory = [];
+        let apiKey = localStorage.getItem('anthropicApiKey') || '';
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const synth = window.speechSynthesis;
+
+        console.log("SpeechRecognition disponível:", !!SpeechRecognition);
+
+        // ===== CARREGAR API KEY =====
+        if (apiKey) {
+            apiKeyInput.value = apiKey;
+            console.log("API Key encontrada no localStorage");
+        }
+
+        apiKeyInput.addEventListener('change', (e) => {
+            apiKey = e.target.value;
+            if (apiKey) {
+                localStorage.setItem('anthropicApiKey', apiKey);
+                statusDiv.textContent = '✅ Chave API salva com sucesso!';
+                console.log("✅ API Key salva");
+                setTimeout(() => {
+                    statusDiv.textContent = 'Pronto para ouvir';
+                }, 2000);
+            }
+        });
+
+        // ===== RECONHECIMENTO DE VOZ =====
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                console.log("🎤 Reconhecimento iniciado");
+                isRecording = true;
+                micBtn.classList.add('recording');
+                micText.textContent = '🎤 Ouvindo...';
+                statusDiv.textContent = '🎤 Fale agora';
+            };
+
+            recognition.onend = () => {
+                console.log("🎤 Reconhecimento finalizado");
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                micText.textContent = '🎤 Fale Comigo';
+                statusDiv.textContent = 'Pronto para ouvir';
+            };
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+
+                console.log("📝 Transcrito:", transcript);
+
+                if (transcript.trim()) {
+                    statusDiv.textContent = '⚡ Processando...';
+                    processWithClaude(transcript);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("❌ Erro de reconhecimento:", event.error);
+                statusDiv.textContent = `❌ Erro: ${event.error}`;
+            };
+        } else {
+            console.error("❌ SpeechRecognition não suportado!");
+            statusDiv.textContent = '❌ Seu navegador não suporta reconhecimento de voz';
+        }
+
+        // ===== CONTROLE DO MICROFONE =====
+        micBtn.addEventListener('mousedown', () => {
+            console.log("🖱️ Mouse down");
+            if (recognition && !isRecording) {
+                recognition.start();
+            }
+        });
+
+        micBtn.addEventListener('mouseup', () => {
+            console.log("🖱️ Mouse up");
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+        });
+
+        micBtn.addEventListener('touchstart', (e) => {
+            console.log("📱 Touch start");
+            e.preventDefault();
+            if (recognition && !isRecording) {
+                recognition.start();
+            }
+        });
+
+        micBtn.addEventListener('touchend', (e) => {
+            console.log("📱 Touch end");
+            e.preventDefault();
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+        });
+
+        // ===== PROCESSAR COM CLAUDE =====
+        async function processWithClaude(userMessage) {
+            console.log("🧠 Processando com Claude:", userMessage);
+
+            conversationHistory.push({
+                role: 'user',
+                content: userMessage
+            });
+
+            addMessageToUI('user', userMessage);
+            saveHistory();
+
+            // Mostrar indicador de pensamento
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'message assistant';
+            thinkingDiv.innerHTML = `
+                <div class="thinking">
+                    <span>Peter está pensando</span>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            `;
+            chatContainer.appendChild(thinkingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                if (!apiKey) {
+                    throw new Error('Chave API não configurada. Adicione no campo acima!');
+                }
+
+                console.log("📡 Enviando requisição para Anthropic...");
+
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-3-5-sonnet-20241022',
+                        max_tokens: 1024,
+                        system: `Você é Peter, o Cabeça de Teia (assistente inteligente inspirado no Homem-Aranha).
+Você responde perguntas de forma clara, prática e amigável.
+Use linguagem coloquial. Pode fazer referências ao universo do Homem-Aranha quando apropriado.
+Seja conciso mas completo. Mantenha um tom descontraído e confiável.`,
+                        messages: conversationHistory
+                    })
+                });
+
+                console.log("📊 Status da resposta:", response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("❌ Erro da API:", errorData);
+                    throw new Error(`Erro ${response.status}: ${errorData.error?.message || 'Erro desconhecido'}`);
+                }
+
+                const data = await response.json();
+                const assistantMessage = data.content[0].text;
+
+                console.log("💬 Resposta recebida:", assistantMessage);
+
+                thinkingDiv.remove();
+
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: assistantMessage
+                });
+
+                addMessageToUI('assistant', assistantMessage);
+                saveHistory();
+
+                speak(assistantMessage);
+
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                thinkingDiv.remove();
+                
+                let errorMsg = '❌ Erro ao processar. Tenta denovo!';
+                if (error.message.includes('API')) {
+                    errorMsg = '❌ Chave API não configurada ou inválida!';
+                } else if (error.message.includes('401')) {
+                    errorMsg = '❌ Chave API expirou ou é inválida!';
+                } else if (error.message.includes('fetch')) {
+                    errorMsg = '❌ Sem conexão com a internet!';
+                }
+
+                addMessageToUI('assistant', errorMsg);
+                statusDiv.textContent = errorMsg;
+            }
+        }
+
+        // ===== TEXT-TO-SPEECH =====
+        function speak(text) {
+            console.log("🗣️ Falando:", text);
+            
+            if (synth.speaking) {
+                synth.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 0.95;
+            utterance.pitch = 1.1;
+            utterance.volume = 1;
+
+            utterance.onend = () => {
+                console.log("✅ Terminou de falar");
+                statusDiv.textContent = 'Pronto para ouvir';
+            };
+
+            synth.speak(utterance);
+        }
+
+        // ===== HISTÓRICO =====
+        function loadHistory() {
+            const saved = localStorage.getItem('peterHistory');
+            if (saved) {
+                conversationHistory = JSON.parse(saved);
+                renderMessages();
+                console.log("📚 Histórico carregado:", conversationHistory.length, "mensagens");
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem('peterHistory', JSON.stringify(conversationHistory));
+        }
+
+        function renderMessages() {
+            if (conversationHistory.length === 0) {
+                chatContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🕷️</div>
+                        <p>E aí? Tudo certo?</p>
+                        <p style="font-size: 11px; margin-top: 10px;">Aperte no microfone e comece a falar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            chatContainer.innerHTML = '';
+            conversationHistory.forEach(msg => {
+                addMessageToUI(msg.role, msg.content, false);
+            });
+        }
+
+        function addMessageToUI(role, content, isNew = true) {
+            if (chatContainer.querySelector('.empty-state')) {
+                chatContainer.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            if (role === 'assistant') {
+                bubble.innerHTML = `<span class="peter-badge">PETER</span>${content}`;
+            } else {
+                bubble.textContent = content;
+            }
+
+            messageDiv.appendChild(bubble);
+            chatContainer.appendChild(messageDiv);
+
+            if (isNew) {
+                setTimeout(() => {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 50);
+            }
+        }
+
+        // ===== LIMPAR CHAT =====
+        clearBtn.addEventListener('click', () => {
+            console.log("🗑️ Limpando chat");
+            if (confirm('Vai limpar tudo? Não tem volta!')) {
+                conversationHistory = [];
+                localStorage.removeItem('peterHistory');
+                renderMessages();
+                statusDiv.textContent = '✨ Chat limpo!';
+                setTimeout(() => {
+                    statusDiv.textContent = 'Pronto para ouvir';
+                }, 2000);
+            }
+        });
+
+        // ===== INICIALIZAR =====
+        console.log("✅ Peter carregado com sucesso!");
+        loadHistory();
+    </script>
+</body>
+</html>
