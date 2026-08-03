@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="theme-color" content="#FBFBFD">
+<meta name="theme-color" content="#FBFBFE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Peter">
 <link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/peter-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./peter-192.png">
 <title>Peter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,12 +18,13 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <style>
 :root{
-  --paper:#FBFBFD;
-  --ink:#101114;
-  --mute:#666B74;
-  --faint:#9AA0A9;
-  --hair:#E6E7EB;
-  --accent:#D62839;
+  --paper:#FBFBFE;
+  --ink:#12173A;
+  --mute:#5F6685;
+  --faint:#7F86A3;
+  --hair:#E3E5EF;
+  --accent:#D0202F;
+  --deep:#1E2E7A;
   --sheet:#FFFFFF;
   --ease:cubic-bezier(.32,.72,0,1);
   --pad:22px;
@@ -110,7 +111,7 @@ body{
   font-size:25px;line-height:1.52;font-weight:400;letter-spacing:-.008em;
 }
 .said w{
-  opacity:.40;
+  opacity:.50;
   transition:opacity .18s linear;
 }
 .said w.lit{opacity:1}
@@ -147,18 +148,18 @@ body{
   transition:opacity .3s var(--ease),transform .3s var(--ease),border-color .25s var(--ease);
 }
 .side.show{opacity:1;transform:scale(1);pointer-events:auto}
-.side:active{background:#F2F2F5}
+.side:active{background:#EFF0F6}
 .side:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mic{
   position:relative;width:72px;height:72px;border-radius:50%;border:0;
-  background:var(--ink);color:#fff;cursor:pointer;
+  background:var(--deep);color:#fff;cursor:pointer;
   display:grid;place-items:center;
-  box-shadow:0 6px 22px rgba(16,17,20,.18);
+  box-shadow:0 6px 22px rgba(30,46,122,.26);
   transition:transform .4s var(--ease),background .4s var(--ease),box-shadow .4s var(--ease);
 }
 .mic:active{transform:scale(.94)}
 .mic:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
-.mic.on{background:var(--accent);box-shadow:0 6px 26px rgba(214,40,57,.34)}
+.mic.on{background:var(--accent);box-shadow:0 6px 26px rgba(208,32,47,.36)}
 .mic::after{
   content:"";position:absolute;inset:-6px;border-radius:50%;
   border:1.5px solid var(--accent);opacity:0;
@@ -181,13 +182,13 @@ body{
 }
 .write input:focus{outline:0;border-color:var(--ink)}
 .write button{
-  border:0;background:var(--ink);color:#fff;width:44px;border-radius:22px;
+  border:0;background:var(--deep);color:#fff;width:44px;border-radius:22px;
   cursor:pointer;font-size:15px;
 }
 
 /* ---------- painel de ajustes ---------- */
 .veil{
-  position:fixed;inset:0;background:rgba(16,17,20,.28);
+  position:fixed;inset:0;background:rgba(18,23,58,.30);
   opacity:0;pointer-events:none;transition:opacity .45s var(--ease);
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:10;
 }
@@ -198,7 +199,7 @@ body{
   background:var(--sheet);border-radius:26px 26px 0 0;
   padding:10px var(--pad) calc(26px + env(safe-area-inset-bottom));
   transform:translateY(101%);transition:transform .5s var(--ease);
-  box-shadow:0 -8px 40px rgba(16,17,20,.14);
+  box-shadow:0 -8px 40px rgba(18,23,58,.16);
   max-height:88vh;overflow-y:auto;
 }
 .sheet.open{transform:translateY(0)}
@@ -213,7 +214,7 @@ body{
   appearance:none;-webkit-appearance:none;
 }
 .field select:focus,.field input:focus{outline:0;border-color:var(--ink)}
-.seg{display:flex;background:#F2F2F5;border-radius:12px;padding:3px;gap:3px}
+.seg{display:flex;background:#EFF0F6;border-radius:12px;padding:3px;gap:3px}
 .seg button{
   flex:1;padding:9px;border:0;border-radius:9px;background:transparent;
   font-family:inherit;font-size:14px;color:var(--mute);cursor:pointer;
@@ -262,16 +263,16 @@ body{
 .warn{
   display:flex;align-items:center;gap:9px;
   font-size:13px;line-height:1.35;color:var(--ink);
-  background:#FFF3F4;border:1px solid #F7DCDF;border-radius:12px;padding:10px 12px;
+  background:#FDF0F1;border:1px solid #F4D8DC;border-radius:12px;padding:10px 12px;
 }
 .warn i{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
 
 #map{
   flex:1;min-height:180px;margin:14px var(--pad) 0;
-  border-radius:18px;overflow:hidden;background:#EDEEF1;
+  border-radius:18px;overflow:hidden;background:#E9EBF3;
   border:1px solid var(--hair);
 }
-.leaflet-container{background:#EDEEF1;font-family:inherit}
+.leaflet-container{background:#E9EBF3;font-family:inherit}
 .leaflet-control-attribution{font-size:9px;background:rgba(255,255,255,.75)}
 .me{position:relative;width:16px;height:16px}
 .me b{
@@ -995,7 +996,7 @@ function onFix(pos){
     setTimeout(function(){ map.invalidateSize(); },80);
     if(meMark) map.removeLayer(meMark);
     if(meRing) map.removeLayer(meRing);
-    meRing=L.circle([la,lo],{radius:acc,color:'#D62839',weight:1,opacity:.35,fillColor:'#D62839',fillOpacity:.07}).addTo(map);
+    meRing=L.circle([la,lo],{radius:acc,color:'#D0202F',weight:1,opacity:.35,fillColor:'#D0202F',fillOpacity:.07}).addTo(map);
     meMark=L.marker([la,lo],{icon:L.divIcon({
       className:'', html:'<div class="me"><s></s><b></b></div>',
       iconSize:[16,16], iconAnchor:[8,8]
