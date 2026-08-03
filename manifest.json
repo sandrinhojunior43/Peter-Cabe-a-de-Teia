@@ -1,49 +1,42 @@
 {
-  "name": "Peter - Cabeça de Teia",
+  "id": "peter-cabeca-de-teia",
+  "name": "Peter — Cabeça de Teia",
   "short_name": "Peter",
-  "description": "Assistente inteligente conversacional com IA inspirado no Homem-Aranha",
-  "start_url": "./index.html",
+  "description": "Assistente pessoal de voz.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "theme_color": "#C41E3A",
-  "background_color": "#0A0A0A",
-  "screenshots": [
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23C41E3A' width='540' height='720'/><text x='50%' y='50%' font-size='200' font-family='Arial' fill='%23FFF' text-anchor='middle' dominant-baseline='middle'>🕷️</text></svg>",
-      "type": "image/svg+xml",
-      "sizes": "540x720",
-      "form_factor": "narrow"
-    }
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#FBFBFE",
+  "theme_color": "#FBFBFE",
+  "categories": [
+    "productivity",
+    "utilities"
   ],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23C41E3A' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-family='Arial' fill='%23FFF' text-anchor='middle' dominant-baseline='middle'>🕷️</text></svg>",
-      "type": "image/svg+xml",
+      "src": "peter-192.png",
       "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23C41E3A' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-family='Arial' fill='%23FFF' text-anchor='middle' dominant-baseline='middle'>🕷️</text></svg>",
-      "type": "image/svg+xml",
+      "src": "peter-512.png",
       "sizes": "512x512",
-      "purpose": "maskable"
-    }
-  ],
-  "categories": ["productivity"],
-  "shortcuts": [
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
-      "name": "Falar com Peter",
-      "short_name": "Conversar",
-      "description": "Abra o app de voz conversacional",
-      "url": "./index.html",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23C41E3A' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-family='Arial' fill='%23FFF' text-anchor='middle' dominant-baseline='middle'>🎤</text></svg>",
-          "type": "image/svg+xml",
-          "sizes": "192x192"
-        }
-      ]
+      "src": "peter-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
