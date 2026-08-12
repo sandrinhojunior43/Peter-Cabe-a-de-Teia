@@ -901,6 +901,7 @@ micBtn.onclick=function(){
   if(falaAtual) falaAtual.encerrar();
   try{ speechSynthesis.cancel(); }catch(e){}
   if(!rec){ toggleWrite(); return; }
+  closeWrite();
   if(listening) rec.stop(); else { try{ rec.start(); }catch(e){} }
 };
 
@@ -910,14 +911,19 @@ $('stop').onclick=function(){ if(falaAtual) falaAtual.encerrar(); };
 /* ---------------- escrever ---------------- */
 function toggleWrite(){
   write.classList.toggle('open');
-  if(write.classList.contains('open')) txt.focus();
+  if(write.classList.contains('open')) txt.focus(); else txt.blur();
+}
+function closeWrite(){
+  if(!write.classList.contains('open')) return;
+  write.classList.remove('open');
+  txt.blur();
 }
 $('kb').onclick=toggleWrite;
 function sendText(){
   var t=txt.value.trim();
   if(!t&&!pendingImage) return;
   if(!t) t='O que você vê nessa imagem, e o que eu preciso saber sobre ela?';
-  txt.value=''; ask(t);
+  txt.value=''; closeWrite(); ask(t);
 }
 $('send').onclick=sendText;
 txt.addEventListener('keydown',function(e){ if(e.key==='Enter') sendText(); });
