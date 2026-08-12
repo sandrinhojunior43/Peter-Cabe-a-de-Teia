@@ -126,6 +126,10 @@ body{
   color:var(--faint);margin-top:8px;white-space:pre-wrap;word-break:break-word;
   max-height:150px;overflow:auto;
 }
+.asked-img{
+  max-width:170px;max-height:170px;border-radius:14px;object-fit:cover;
+  display:block;margin-bottom:9px;border:1px solid var(--hair);
+}
 .blank{
   height:100%;display:flex;flex-direction:column;justify-content:center;
   color:var(--faint);
@@ -137,6 +141,21 @@ body{
 .dots i:nth-child(2){animation-delay:.16s}
 .dots i:nth-child(3){animation-delay:.32s}
 @keyframes blip{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+/* ---------- anexo de foto ---------- */
+.attach{
+  display:none;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border:1px solid var(--hair);border-radius:16px;background:#fff;
+}
+.attach.show{display:flex}
+.attach img{width:38px;height:38px;border-radius:10px;object-fit:cover;flex:none}
+.attach span{flex:1;font-size:13px;color:var(--mute)}
+.attach button{
+  border:0;background:transparent;color:var(--faint);cursor:pointer;font-size:16px;
+  width:28px;height:28px;border-radius:50%;flex:none;
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.attach button:hover{background:rgba(0,0,0,.05);color:var(--ink)}
 
 /* ---------- base ---------- */
 .base{padding:6px var(--pad) 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
@@ -302,6 +321,24 @@ body{
 }
 .ghost:hover{border-color:var(--ink);color:var(--ink)}
 .blocked{padding:22px var(--pad);color:var(--mute);font-size:14px;line-height:1.6}
+
+/* ---------- tela do histórico ---------- */
+.hlist{flex:1;min-height:0;overflow-y:auto;padding:6px var(--pad) 24px;scrollbar-width:none}
+.hlist::-webkit-scrollbar{display:none}
+.hempty{padding:70px 0;color:var(--faint);font-size:15px;text-align:center;line-height:1.5}
+.hitem{padding:14px 0;border-top:1px solid var(--hair);display:flex;gap:12px;align-items:flex-start}
+.hitem:first-child{border-top:0}
+.hthumb{width:44px;height:44px;border-radius:11px;object-fit:cover;flex:none;margin-top:2px}
+.hbody{flex:1;min-width:0}
+.hq{font-size:14.5px;font-weight:500;color:var(--ink);line-height:1.4}
+.ha{font-size:13.5px;color:var(--mute);margin-top:4px;line-height:1.42}
+.htime{font-size:11px;color:var(--faint);margin-top:7px;letter-spacing:.02em}
+.hdel{
+  border:0;background:transparent;color:var(--faint);cursor:pointer;flex:none;
+  width:30px;height:30px;display:grid;place-items:center;border-radius:50%;
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.hdel:hover{background:rgba(0,0,0,.05);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -314,6 +351,19 @@ body{
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20.5 4.5 15 7 9 4.5 3.5 7v12.5L9 17l6 2.5 5.5-2.5z"/>
         <path d="M9 4.5V17M15 7v12.5"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="photoBtn" aria-label="Enviar foto pro Peter">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+        <circle cx="12" cy="13.5" r="3.4"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="goHist" aria-label="Ver histórico de perguntas">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 3-6.7"/>
+        <path d="M3 4v5h5"/>
+        <path d="M12 8v4l3 2"/>
       </svg>
     </button>
     <button class="icon-btn" id="gear" aria-label="Ajustes">
@@ -338,6 +388,11 @@ body{
   </div>
 
   <div class="base">
+    <div class="attach" id="attach">
+      <img id="attachImg" alt="">
+      <span>Foto anexada</span>
+      <button id="attachClose" aria-label="Remover foto">✕</button>
+    </div>
     <div class="write" id="write">
       <input id="txt" placeholder="Escrever" autocomplete="off">
       <button id="send" aria-label="Enviar">↑</button>
@@ -397,6 +452,27 @@ body{
     <div class="hours" id="hours"></div>
     <button class="ghost" id="again">Atualizar</button>
   </div>
+</div>
+</div>
+
+<input type="file" id="photoInput" accept="image/*" style="display:none">
+
+<div class="over" id="histOver">
+<div class="app">
+  <div class="bar">
+    <button class="icon-btn" id="goTalkFromHist" aria-label="Voltar para a conversa">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="label">histórico</span>
+    <button class="icon-btn" id="histClearBtn" aria-label="Apagar todo o histórico">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>
+      </svg>
+    </button>
+  </div>
+  <div class="hlist" id="hlist"></div>
 </div>
 </div>
 
@@ -490,7 +566,9 @@ function systemText(){
   'HOJE É '+hoje+'. Essa data vem do aparelho do usuário e é confiável. '+
   'Seu treinamento parou antes de hoje, então você não conhece acontecimentos recentes por conta própria. '+
   'Se a pergunta envolver algo atual — notícias, lançamentos, preços, quem ocupa um cargo, se algo já saiu — pesquise antes de responder. '+
-  'Nunca diga que algo ainda não aconteceu apoiado só na sua memória: ela está atrasada.';
+  'Nunca diga que algo ainda não aconteceu apoiado só na sua memória: ela está atrasada.\n\n'+
+  'Às vezes o usuário manda uma foto junto com a pergunta. Olhe a imagem com atenção antes de responder: descreva o que for relevante, '+
+  'explique por que algo está acontecendo, o que aquilo significa ou o que fazer a seguir, conforme o que for perguntado.';
 }
 
 /* ---------------- chamada à IA ---------------- */
@@ -500,7 +578,16 @@ function callAI(msgs,sys,useWeb){
   var url,opts;
 
   if(P.prov==='claude'){
-    var body={model:modelOf(),max_tokens:800,system:sys,messages:msgs};
+    var apiMsgs=msgs.map(function(m){
+      if(m.image){
+        return {role:m.role,content:[
+          {type:'image',source:{type:'base64',media_type:m.image.mediaType,data:m.image.data}},
+          {type:'text',text:m.content||'O que você vê nessa imagem?'}
+        ]};
+      }
+      return {role:m.role,content:m.content};
+    });
+    var body={model:modelOf(),max_tokens:800,system:sys,messages:apiMsgs};
     if(useWeb) body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:3}];
     url='https://api.anthropic.com/v1/messages';
     opts={method:'POST',headers:{
@@ -510,7 +597,12 @@ function callAI(msgs,sys,useWeb){
   }else{
     var b={
       system_instruction:{parts:[{text:sys}]},
-      contents:msgs.map(function(m){return {role:(m.role==='assistant'?'model':'user'),parts:[{text:m.content}]};}),
+      contents:msgs.map(function(m){
+        var parts=[];
+        if(m.image) parts.push({inline_data:{mime_type:m.image.mediaType,data:m.image.data}});
+        parts.push({text:m.content||'O que você vê nessa imagem?'});
+        return {role:(m.role==='assistant'?'model':'user'),parts:parts};
+      }),
       generationConfig:{maxOutputTokens:800}
     };
     if(useWeb) b.tools=[{google_search:{}}];
@@ -549,9 +641,13 @@ var convo=[];
 function clearBlank(){ if(blank&&blank.parentNode){ blank.parentNode.removeChild(blank); blank=null; } }
 function scrollDown(){ stage.scrollTop=stage.scrollHeight; }
 
-function addTurn(question){
+function addTurn(question,imgUrl){
   clearBlank();
   var t=document.createElement('div'); t.className='turn';
+  if(imgUrl){
+    var im=document.createElement('img'); im.className='asked-img'; im.src=imgUrl; im.alt='Foto enviada';
+    t.appendChild(im);
+  }
   var q=document.createElement('div'); q.className='asked'; q.textContent=question;
   var a=document.createElement('div'); a.className='said serif';
   a.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';
@@ -732,18 +828,25 @@ var busy=false;
 function ask(question){
   if(busy) return;
   busy=true;
-  var slot=addTurn(question);
-  convo.push({role:'user',content:question});
+  var img=pendingImage;
+  pendingImage=null;
+  clearAttachPreview();
+  var slot=addTurn(question,img&&img.url);
+  var entry={role:'user',content:question};
+  if(img) entry.image={mediaType:img.mediaType,data:img.data};
+  convo.push(entry);
   hint.textContent='pensando'; hint.className='hint warm';
 
   callAI(convo,systemText(),P.web).then(function(answer){
     convo.push({role:'assistant',content:answer});
     speak(answer,slot);
+    saveHistoryTurn(question,answer,img&&img.thumb);
     busy=false;
   }).catch(function(e){
     busy=false;
     if(slot.turn&&slot.turn.parentNode) slot.turn.parentNode.removeChild(slot.turn);
     convo.pop();
+    if(img){ pendingImage=img; showAttachPreview(img.thumb); write.classList.add('open'); }
     hint.textContent='toque para falar · '; hint.className='hint'; hint.appendChild(kbLink());
     live.classList.remove('on');
     reportError(e);
@@ -811,11 +914,71 @@ function toggleWrite(){
 }
 $('kb').onclick=toggleWrite;
 function sendText(){
-  var t=txt.value.trim(); if(!t) return;
+  var t=txt.value.trim();
+  if(!t&&!pendingImage) return;
+  if(!t) t='O que você vê nessa imagem, e o que eu preciso saber sobre ela?';
   txt.value=''; ask(t);
 }
 $('send').onclick=sendText;
 txt.addEventListener('keydown',function(e){ if(e.key==='Enter') sendText(); });
+
+/* ---------------- enviar foto ---------------- */
+var pendingImage=null;
+var attachEl=$('attach'),attachImg=$('attachImg'),photoInput=$('photoInput');
+
+function resizeImage(file,maxDim,quality){
+  return new Promise(function(resolve,reject){
+    var reader=new FileReader();
+    reader.onerror=function(){ reject(new Error('LEITURA')); };
+    reader.onload=function(e){
+      var img=new Image();
+      img.onerror=function(){ reject(new Error('IMAGEM')); };
+      img.onload=function(){
+        var w=img.width,h=img.height;
+        var scale=Math.min(1,maxDim/Math.max(w,h));
+        var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
+        var c=document.createElement('canvas'); c.width=cw; c.height=ch;
+        c.getContext('2d').drawImage(img,0,0,cw,ch);
+        try{ resolve(c.toDataURL('image/jpeg',quality)); }
+        catch(err){ reject(err); }
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function showAttachPreview(url){
+  attachImg.src=url;
+  attachEl.classList.add('show');
+}
+function clearAttachPreview(){
+  attachEl.classList.remove('show');
+  attachImg.src='';
+  txt.placeholder='Escrever';
+}
+
+$('photoBtn').onclick=function(){ photoInput.click(); };
+photoInput.onchange=function(){
+  var f=photoInput.files&&photoInput.files[0];
+  photoInput.value='';
+  if(!f) return;
+  if(!/^image\//.test(f.type)){ addNote('Arquivo inválido','Escolha uma imagem.'); return; }
+  Promise.all([
+    resizeImage(f,1024,0.75),  // versão enviada pra IA
+    resizeImage(f,220,0.6)     // miniatura pro histórico e pra prévia
+  ]).then(function(res){
+    var full=res[0],thumb=res[1];
+    pendingImage={mediaType:'image/jpeg',data:full.split(',')[1],url:full,thumb:thumb};
+    showAttachPreview(thumb);
+    write.classList.add('open');
+    txt.placeholder='Pergunte sobre a foto…';
+    txt.focus();
+  }).catch(function(){
+    addNote('Não consegui abrir a foto','Tente outra imagem.');
+  });
+};
+$('attachClose').onclick=function(){ pendingImage=null; clearAttachPreview(); };
 
 /* ---------------- notícias ---------------- */
 var feed=[],feedAt=0,rot=null;
@@ -885,6 +1048,80 @@ $('news').onclick=function(){
   t.appendChild(q); t.appendChild(a); stage.appendChild(t); scrollDown();
 };
 
+/* ---------------- histórico de perguntas ---------------- */
+var HIST_KEY='hist_v1', HIST_MAX=300;
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function saveHistoryList(list){
+  try{ localStorage.setItem(HIST_KEY,JSON.stringify(list)); }
+  catch(e){
+    // sem espaço: descarta as miniaturas mais antigas e tenta de novo
+    var corte=Math.max(0,list.length-40);
+    var slim=list.map(function(h,i){
+      return i<corte ? {id:h.id,ts:h.ts,q:h.q,a:h.a} : h;
+    });
+    try{ localStorage.setItem(HIST_KEY,JSON.stringify(slim)); }catch(e2){}
+  }
+}
+function saveHistoryTurn(q,a,thumb){
+  var list=loadHistory();
+  list.push({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),ts:Date.now(),q:q,a:a,thumb:thumb||null});
+  if(list.length>HIST_MAX) list=list.slice(list.length-HIST_MAX);
+  saveHistoryList(list);
+}
+function deleteHistoryItem(id){
+  saveHistoryList(loadHistory().filter(function(h){ return h.id!==id; }));
+  paintHistory();
+}
+function clearHistory(){
+  if(!loadHistory().length) return;
+  if(!confirm('Apagar todo o histórico de perguntas? Essa ação não pode ser desfeita.')) return;
+  localStorage.removeItem(HIST_KEY);
+  paintHistory();
+}
+function fmtWhen(ts){
+  var d=new Date(ts);
+  var dias=['dom','seg','ter','qua','qui','sex','sáb'];
+  return dias[d.getDay()]+' · '+d.getDate()+'/'+(d.getMonth()+1)+' · '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+}
+
+function paintHistory(){
+  var list=loadHistory().slice().reverse();
+  var wrap=$('hlist'); wrap.innerHTML='';
+  if(!list.length){
+    var vazio=document.createElement('div'); vazio.className='hempty';
+    vazio.textContent='Nenhuma pergunta ainda. O que você perguntar pro Peter aparece aqui.';
+    wrap.appendChild(vazio);
+    return;
+  }
+  list.forEach(function(h){
+    var it=document.createElement('div'); it.className='hitem';
+    if(h.thumb){
+      var im=document.createElement('img'); im.className='hthumb'; im.src=h.thumb; im.alt='';
+      it.appendChild(im);
+    }
+    var body=document.createElement('div'); body.className='hbody';
+    var q=document.createElement('div'); q.className='hq'; q.textContent=h.q;
+    var a=document.createElement('div'); a.className='ha'; a.textContent=h.a;
+    var tm=document.createElement('div'); tm.className='htime'; tm.textContent=fmtWhen(h.ts);
+    body.appendChild(q); body.appendChild(a); body.appendChild(tm);
+    it.appendChild(body);
+    var del=document.createElement('button'); del.className='hdel'; del.setAttribute('aria-label','Apagar essa pergunta');
+    del.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+    del.onclick=function(){ deleteHistoryItem(h.id); };
+    it.appendChild(del);
+    wrap.appendChild(it);
+  });
+}
+
+var histOver=$('histOver');
+$('goHist').onclick=function(){ paintHistory(); histOver.classList.add('open'); };
+$('goTalkFromHist').onclick=function(){ histOver.classList.remove('open'); };
+$('histClearBtn').onclick=clearHistory;
+
 /* ---------------- painel ---------------- */
 var sheet=$('sheet'),veil=$('veil'),modelSel=$('model'),keyIn=$('key'),
     swWeb=$('swWeb'),swNews=$('swNews'),seg=$('seg');
@@ -950,7 +1187,9 @@ $('goMap').onclick=function(){
 };
 $('goTalk').onclick=function(){ over.classList.remove('open'); };
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'&&over.classList.contains('open')) over.classList.remove('open');
+  if(e.key!=='Escape') return;
+  if(over.classList.contains('open')) over.classList.remove('open');
+  if(histOver&&histOver.classList.contains('open')) histOver.classList.remove('open');
 });
 
 function openMap(){
